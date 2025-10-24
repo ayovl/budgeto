@@ -34,10 +34,10 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
     }
   }, [income, lastIncome]);
 
-  const handleIncomeUpdate = () => {
+  const handleIncomeUpdate = async () => {
     const newIncome = parseFloat(inputValue) || 0;
     setLastIncome(newIncome);
-    onIncomeChange(newIncome);
+    await onIncomeChange(newIncome);
   };
 
   const needsAmount = (income * needsPercentage) / 100;

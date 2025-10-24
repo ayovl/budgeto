@@ -52,7 +52,12 @@ export default function Home() {
   const totalRemaining = totalBudget - totalSpent;
 
   const handleIncomeChange = async (newIncome: number) => {
-    await updateSettings({ monthly_income: newIncome });
+    try {
+      await updateSettings({ monthly_income: newIncome });
+    } catch (error) {
+      console.error('Error updating income:', error);
+      alert('Failed to update income. Please try again.');
+    }
   };
 
   const handleAddExpense = async (category: 'needs' | 'wants' | 'savings', name: string, amount: number) => {
