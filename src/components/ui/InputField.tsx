@@ -27,10 +27,10 @@ export const InputField: React.FC<InputFieldProps> = ({
 }) => {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <label className="text-sm font-medium text-gray-300">{label}</label>
       <div className="relative">
         {prefix && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
             {prefix}
           </span>
         )}
@@ -42,7 +42,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           min={min}
           max={max}
           step={step}
-          className={`w-full px-3 ${prefix ? 'pl-7' : ''} py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors`}
+          className={`w-full px-3 ${prefix ? 'pl-7' : ''} py-2 bg-gray-900 border-2 border-gray-700 text-white rounded-lg focus:border-blue-500 focus:outline-none transition-colors placeholder:text-gray-500`}
         />
       </div>
     </div>

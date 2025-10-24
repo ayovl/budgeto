@@ -19,10 +19,10 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading your budget planner...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
+          <p className="text-gray-400">Loading your budget planner...</p>
         </div>
       </div>
     );
@@ -30,9 +30,9 @@ export default function Home() {
 
   if (!settings) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
         <div className="text-center">
-          <p className="text-red-600">Error loading settings. Please refresh the page.</p>
+          <p className="text-red-500">Error loading settings. Please refresh the page.</p>
         </div>
       </div>
     );
@@ -69,15 +69,15 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-950 via-gray-900 to-gray-950">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-gray-900/50 backdrop-blur-sm shadow-lg border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
-            <Wallet className="w-8 h-8 text-blue-600" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Budgeto</h1>
+            <Wallet className="w-8 h-8 text-blue-500" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Budgeto</h1>
           </div>
-          <p className="text-sm text-gray-600 mt-1">Your Personal Budget Planner</p>
+          <p className="text-sm text-gray-400 mt-1">Your Personal Budget Planner</p>
         </div>
       </header>
 

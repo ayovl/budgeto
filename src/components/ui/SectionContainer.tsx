@@ -14,17 +14,17 @@ export const SectionContainer: React.FC<SectionContainerProps> = ({
   className = '',
 }) => {
   const colorClasses = {
-    blue: 'border-blue-300 bg-blue-50/50',
-    orange: 'border-orange-300 bg-orange-50/50',
-    green: 'border-green-300 bg-green-50/50',
-    purple: 'border-purple-300 bg-purple-50/50',
+    blue: 'border-blue-500/30 bg-gray-800/50',
+    orange: 'border-orange-500/30 bg-gray-800/50',
+    green: 'border-green-500/30 bg-gray-800/50',
+    purple: 'border-purple-500/30 bg-gray-800/50',
   };
 
   const titleColorClasses = {
-    blue: 'text-blue-700',
-    orange: 'text-orange-700',
-    green: 'text-green-700',
-    purple: 'text-purple-700',
+    blue: 'text-blue-400',
+    orange: 'text-orange-400',
+    green: 'text-green-400',
+    purple: 'text-purple-400',
   };
 
   return (

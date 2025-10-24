@@ -18,7 +18,7 @@ export const BudgetSummary: React.FC<BudgetSummaryProps> = ({
   const isOverBudget = totalRemaining < 0;
 
   return (
-    <div className="bg-linear-to-br from-purple-600 to-blue-600 text-white rounded-2xl p-6 sm:p-8 shadow-xl">
+    <div className="bg-linear-to-br from-purple-600/90 to-blue-600/90 text-white rounded-2xl p-6 sm:p-8 shadow-2xl border border-purple-500/30">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold">Budget Overview</h2>
         <Wallet className="w-8 h-8 sm:w-10 sm:h-10" />

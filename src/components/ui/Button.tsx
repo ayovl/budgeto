@@ -20,10 +20,10 @@ export const Button: React.FC<ButtonProps> = ({
   type = 'button',
 }) => {
   const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-    danger: 'bg-red-600 hover:bg-red-700 text-white',
-    success: 'bg-green-600 hover:bg-green-700 text-white',
+    primary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30',
+    secondary: 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600',
+    danger: 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/30',
+    success: 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/30',
   };
 
   const sizeClasses = {
