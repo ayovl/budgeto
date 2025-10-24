@@ -48,7 +48,7 @@ export default function Home() {
   const savingsExpenses = expenses.filter((e) => e.category === 'savings');
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const totalBudget = needsBudget + wantsBudget + savingsBudget;
+  const totalBudget = monthlyIncome; // Total budget is simply the monthly income
   const totalRemaining = totalBudget - totalSpent;
 
   const handleIncomeChange = async (newIncome: number) => {
@@ -156,7 +156,8 @@ export default function Home() {
               budget={needsBudget}
               expenses={needsExpenses}
               onBudgetChange={async (budget) => {
-                const newPercentage = Math.round((budget / monthlyIncome) * 100);
+                // Calculate exact percentage with 2 decimal places
+                const newPercentage = Math.round((budget / monthlyIncome) * 10000) / 100;
                 const otherPercentages = settings.wants_percentage + settings.savings_percentage;
                 
                 // Only allow if total doesn't exceed 100%
@@ -180,7 +181,8 @@ export default function Home() {
               budget={wantsBudget}
               expenses={wantsExpenses}
               onBudgetChange={async (budget) => {
-                const newPercentage = Math.round((budget / monthlyIncome) * 100);
+                // Calculate exact percentage with 2 decimal places
+                const newPercentage = Math.round((budget / monthlyIncome) * 10000) / 100;
                 const otherPercentages = settings.needs_percentage + settings.savings_percentage;
                 
                 // Only allow if total doesn't exceed 100%
@@ -203,7 +205,8 @@ export default function Home() {
               budget={savingsBudget}
               expenses={savingsExpenses}
               onBudgetChange={async (budget) => {
-                const newPercentage = Math.round((budget / monthlyIncome) * 100);
+                // Calculate exact percentage with 2 decimal places
+                const newPercentage = Math.round((budget / monthlyIncome) * 10000) / 100;
                 const otherPercentages = settings.needs_percentage + settings.wants_percentage;
                 
                 // Only allow if total doesn't exceed 100%
