@@ -96,7 +96,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               value={budgetInput}
               onChange={setBudgetInput}
               type="number"
-              prefix="₹"
+              prefix="₨"
               min={0}
               step={50}
               className="flex-1"
@@ -145,7 +145,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               value={expenseAmount}
               onChange={setExpenseAmount}
               type="number"
-              prefix="₹"
+              prefix="₨"
               min={0}
               step={0.01}
             />

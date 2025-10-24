@@ -143,7 +143,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
   };
 
   const handleSave = () => {
-    if (!goalName.trim() || !targetAmount || !startDate) return;
+    if (!goalName.trim() || !targetAmount || !startDate || !targetDate) return;
 
     const target = parseFloat(targetAmount);
     if (!target || target <= 0) return;
@@ -252,7 +252,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                 setLastChangedField('targetAmount');
               }}
               type="number"
-              prefix="₹"
+              prefix="₨"
               min={0}
               step={100}
             />
@@ -297,7 +297,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                 setLastChangedField('monthlySavings');
               }}
               type="number"
-              prefix="₹"
+              prefix="₨"
               min={0}
               step={10}
             />
