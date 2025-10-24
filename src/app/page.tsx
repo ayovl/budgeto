@@ -1,65 +1,184 @@
-import Image from "next/image";
+'use client';
+
+import React from 'react';
+import { MonthlyIncome } from '@/components/budget/MonthlyIncome';
+import { BudgetSummary } from '@/components/expenses/BudgetSummary';
+import { ExpenseSection } from '@/components/expenses/ExpenseSection';
+import { SavingsGoals } from '@/components/goals/SavingsGoals';
+import { InvestmentPlans } from '@/components/investments/InvestmentPlans';
+import { useUserSettings, useExpenses, useSavingsGoals, useInvestmentPlans } from '@/lib/supabase/hooks';
+import { Loader2, Wallet } from 'lucide-react';
 
 export default function Home() {
+  const { settings, loading: settingsLoading, updateSettings } = useUserSettings();
+  const { expenses, loading: expensesLoading, addExpense, updateExpense, deleteExpense } = useExpenses();
+  const { goals, loading: goalsLoading, addGoal, updateGoal, deleteGoal } = useSavingsGoals();
+  const { plans, loading: plansLoading, addPlan, updatePlan, deletePlan } = useInvestmentPlans();
+
+  const isLoading = settingsLoading || expensesLoading || goalsLoading || plansLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading your budget planner...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-red-600">Error loading settings. Please refresh the page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const monthlyIncome = settings.monthly_income;
+  const needsBudget = (monthlyIncome * settings.needs_percentage) / 100;
+  const wantsBudget = (monthlyIncome * settings.wants_percentage) / 100;
+  const savingsBudget = (monthlyIncome * settings.savings_percentage) / 100;
+
+  const needsExpenses = expenses.filter((e) => e.category === 'needs');
+  const wantsExpenses = expenses.filter((e) => e.category === 'wants');
+  const savingsExpenses = expenses.filter((e) => e.category === 'savings');
+
+  const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalBudget = needsBudget + wantsBudget + savingsBudget;
+  const totalRemaining = totalBudget - totalSpent;
+
+  const handleIncomeChange = async (newIncome: number) => {
+    await updateSettings({ monthly_income: newIncome });
+  };
+
+  const handleAddExpense = async (category: 'needs' | 'wants' | 'savings', name: string, amount: number) => {
+    await addExpense({
+      category,
+      name,
+      amount,
+      date: new Date().toISOString().split('T')[0],
+    });
+  };
+
+  const handleEditExpense = async (id: string, name: string, amount: number) => {
+    await updateExpense(id, { name, amount });
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-3">
+            <Wallet className="w-8 h-8 text-blue-600" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Budgeto</h1>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">Your Personal Budget Planner</p>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+        {/* Monthly Income Section */}
+        <MonthlyIncome
+          income={monthlyIncome}
+          onIncomeChange={handleIncomeChange}
+          needsPercentage={settings.needs_percentage}
+          wantsPercentage={settings.wants_percentage}
+          savingsPercentage={settings.savings_percentage}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+        {/* Budget Summary */}
+        {monthlyIncome > 0 && (
+          <BudgetSummary
+            totalBudget={totalBudget}
+            totalSpent={totalSpent}
+            totalRemaining={totalRemaining}
+          />
+        )}
+
+        {/* Expense Sections */}
+        {monthlyIncome > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <ExpenseSection
+              title="Needs (50%)"
+              category="needs"
+              color="blue"
+              budget={needsBudget}
+              expenses={needsExpenses}
+              onBudgetChange={async (budget) => {
+                const percentage = (budget / monthlyIncome) * 100;
+                await updateSettings({ needs_percentage: Math.round(percentage) });
+              }}
+              onAddExpense={(name, amount) => handleAddExpense('needs', name, amount)}
+              onEditExpense={handleEditExpense}
+              onDeleteExpense={deleteExpense}
+              defaultPlaceholder="Internet Bill"
+            />
+
+            <ExpenseSection
+              title="Wants (30%)"
+              category="wants"
+              color="orange"
+              budget={wantsBudget}
+              expenses={wantsExpenses}
+              onBudgetChange={async (budget) => {
+                const percentage = (budget / monthlyIncome) * 100;
+                await updateSettings({ wants_percentage: Math.round(percentage) });
+              }}
+              onAddExpense={(name, amount) => handleAddExpense('wants', name, amount)}
+              onEditExpense={handleEditExpense}
+              onDeleteExpense={deleteExpense}
+              defaultPlaceholder="Entertainment"
+            />
+
+            <ExpenseSection
+              title="Savings (20%)"
+              category="savings"
+              color="green"
+              budget={savingsBudget}
+              expenses={savingsExpenses}
+              onBudgetChange={async (budget) => {
+                const percentage = (budget / monthlyIncome) * 100;
+                await updateSettings({ savings_percentage: Math.round(percentage) });
+              }}
+              onAddExpense={(name, amount) => handleAddExpense('savings', name, amount)}
+              onEditExpense={handleEditExpense}
+              onDeleteExpense={deleteExpense}
+              defaultPlaceholder="Emergency Fund"
+            />
+          </div>
+        )}
+
+        {/* Savings Goals */}
+        <SavingsGoals
+          goals={goals}
+          onAddGoal={addGoal}
+          onEditGoal={updateGoal}
+          onDeleteGoal={deleteGoal}
+        />
+
+        {/* Investment Plans */}
+        <InvestmentPlans
+          plans={plans}
+          onAddPlan={addPlan}
+          onEditPlan={updatePlan}
+          onDeletePlan={deletePlan}
+        />
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+          <p className="text-sm text-gray-600">
+            Built with Next.js, Supabase & Recharts
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }
