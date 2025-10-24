@@ -40,10 +40,15 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
   const [expenseName, setExpenseName] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [budgetInput, setBudgetInput] = useState(budget.toString());
+  const [lastBudget, setLastBudget] = useState(budget);
 
   React.useEffect(() => {
-    setBudgetInput(budget.toString());
-  }, [budget]);
+    // Only update input if the budget prop changed from external source
+    if (budget !== lastBudget) {
+      setBudgetInput(budget.toString());
+      setLastBudget(budget);
+    }
+  }, [budget, lastBudget]);
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const remaining = budget - totalSpent;
@@ -93,6 +98,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
 
   const handleBudgetUpdate = () => {
     const newBudget = parseFloat(budgetInput) || 0;
+    setLastBudget(newBudget);
     onBudgetChange(newBudget);
   };
 

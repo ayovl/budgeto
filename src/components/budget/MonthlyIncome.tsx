@@ -24,13 +24,19 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
   savingsPercentage,
 }) => {
   const [inputValue, setInputValue] = useState(income.toString());
+  const [lastIncome, setLastIncome] = useState(income);
 
   React.useEffect(() => {
-    setInputValue(income.toString());
-  }, [income]);
+    // Only update input if the income prop changed from external source
+    if (income !== lastIncome) {
+      setInputValue(income.toString());
+      setLastIncome(income);
+    }
+  }, [income, lastIncome]);
 
   const handleIncomeUpdate = () => {
     const newIncome = parseFloat(inputValue) || 0;
+    setLastIncome(newIncome);
     onIncomeChange(newIncome);
   };
 

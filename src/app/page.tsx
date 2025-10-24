@@ -112,7 +112,15 @@ export default function Home() {
               expenses={needsExpenses}
               onBudgetChange={async (budget) => {
                 const newPercentage = Math.round((budget / monthlyIncome) * 100);
-                await updateSettings({ needs_percentage: newPercentage });
+                const otherPercentages = settings.wants_percentage + settings.savings_percentage;
+                
+                // Only allow if total doesn't exceed 100%
+                if (newPercentage + otherPercentages <= 100) {
+                  await updateSettings({ needs_percentage: newPercentage });
+                } else {
+                  // Revert to previous value by not updating
+                  alert(`Cannot set budget. Total would exceed 100% (Needs: ${newPercentage}% + Wants: ${settings.wants_percentage}% + Savings: ${settings.savings_percentage}% = ${newPercentage + otherPercentages}%)`);
+                }
               }}
               onAddExpense={(name, amount) => handleAddExpense('needs', name, amount)}
               onEditExpense={handleEditExpense}
@@ -128,7 +136,14 @@ export default function Home() {
               expenses={wantsExpenses}
               onBudgetChange={async (budget) => {
                 const newPercentage = Math.round((budget / monthlyIncome) * 100);
-                await updateSettings({ wants_percentage: newPercentage });
+                const otherPercentages = settings.needs_percentage + settings.savings_percentage;
+                
+                // Only allow if total doesn't exceed 100%
+                if (newPercentage + otherPercentages <= 100) {
+                  await updateSettings({ wants_percentage: newPercentage });
+                } else {
+                  alert(`Cannot set budget. Total would exceed 100% (Needs: ${settings.needs_percentage}% + Wants: ${newPercentage}% + Savings: ${settings.savings_percentage}% = ${newPercentage + otherPercentages}%)`);
+                }
               }}
               onAddExpense={(name, amount) => handleAddExpense('wants', name, amount)}
               onEditExpense={handleEditExpense}
@@ -144,7 +159,14 @@ export default function Home() {
               expenses={savingsExpenses}
               onBudgetChange={async (budget) => {
                 const newPercentage = Math.round((budget / monthlyIncome) * 100);
-                await updateSettings({ savings_percentage: newPercentage });
+                const otherPercentages = settings.needs_percentage + settings.wants_percentage;
+                
+                // Only allow if total doesn't exceed 100%
+                if (newPercentage + otherPercentages <= 100) {
+                  await updateSettings({ savings_percentage: newPercentage });
+                } else {
+                  alert(`Cannot set budget. Total would exceed 100% (Needs: ${settings.needs_percentage}% + Wants: ${settings.wants_percentage}% + Savings: ${newPercentage}% = ${newPercentage + otherPercentages}%)`);
+                }
               }}
               onAddExpense={(name, amount) => handleAddExpense('savings', name, amount)}
               onEditExpense={handleEditExpense}
