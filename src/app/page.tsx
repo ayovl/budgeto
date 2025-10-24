@@ -112,23 +112,7 @@ export default function Home() {
               expenses={needsExpenses}
               onBudgetChange={async (budget) => {
                 const newPercentage = Math.round((budget / monthlyIncome) * 100);
-                const totalOtherPercentages = settings.wants_percentage + settings.savings_percentage;
-                
-                if (newPercentage + totalOtherPercentages > 100) {
-                  // If it would exceed 100%, adjust proportionally
-                  const remainingForOthers = 100 - newPercentage;
-                  const totalOthers = totalOtherPercentages;
-                  const wantsRatio = totalOthers > 0 ? settings.wants_percentage / totalOthers : 0.5;
-                  const savingsRatio = totalOthers > 0 ? settings.savings_percentage / totalOthers : 0.5;
-                  
-                  await updateSettings({
-                    needs_percentage: newPercentage,
-                    wants_percentage: Math.round(remainingForOthers * wantsRatio),
-                    savings_percentage: Math.round(remainingForOthers * savingsRatio)
-                  });
-                } else {
-                  await updateSettings({ needs_percentage: newPercentage });
-                }
+                await updateSettings({ needs_percentage: newPercentage });
               }}
               onAddExpense={(name, amount) => handleAddExpense('needs', name, amount)}
               onEditExpense={handleEditExpense}
@@ -144,23 +128,7 @@ export default function Home() {
               expenses={wantsExpenses}
               onBudgetChange={async (budget) => {
                 const newPercentage = Math.round((budget / monthlyIncome) * 100);
-                const totalOtherPercentages = settings.needs_percentage + settings.savings_percentage;
-                
-                if (newPercentage + totalOtherPercentages > 100) {
-                  // If it would exceed 100%, adjust proportionally
-                  const remainingForOthers = 100 - newPercentage;
-                  const totalOthers = totalOtherPercentages;
-                  const needsRatio = totalOthers > 0 ? settings.needs_percentage / totalOthers : 0.5;
-                  const savingsRatio = totalOthers > 0 ? settings.savings_percentage / totalOthers : 0.5;
-                  
-                  await updateSettings({
-                    wants_percentage: newPercentage,
-                    needs_percentage: Math.round(remainingForOthers * needsRatio),
-                    savings_percentage: Math.round(remainingForOthers * savingsRatio)
-                  });
-                } else {
-                  await updateSettings({ wants_percentage: newPercentage });
-                }
+                await updateSettings({ wants_percentage: newPercentage });
               }}
               onAddExpense={(name, amount) => handleAddExpense('wants', name, amount)}
               onEditExpense={handleEditExpense}
@@ -176,23 +144,7 @@ export default function Home() {
               expenses={savingsExpenses}
               onBudgetChange={async (budget) => {
                 const newPercentage = Math.round((budget / monthlyIncome) * 100);
-                const totalOtherPercentages = settings.needs_percentage + settings.wants_percentage;
-                
-                if (newPercentage + totalOtherPercentages > 100) {
-                  // If it would exceed 100%, adjust proportionally
-                  const remainingForOthers = 100 - newPercentage;
-                  const totalOthers = totalOtherPercentages;
-                  const needsRatio = totalOthers > 0 ? settings.needs_percentage / totalOthers : 0.5;
-                  const wantsRatio = totalOthers > 0 ? settings.wants_percentage / totalOthers : 0.5;
-                  
-                  await updateSettings({
-                    savings_percentage: newPercentage,
-                    needs_percentage: Math.round(remainingForOthers * needsRatio),
-                    wants_percentage: Math.round(remainingForOthers * wantsRatio)
-                  });
-                } else {
-                  await updateSettings({ savings_percentage: newPercentage });
-                }
+                await updateSettings({ savings_percentage: newPercentage });
               }}
               onAddExpense={(name, amount) => handleAddExpense('savings', name, amount)}
               onEditExpense={handleEditExpense}

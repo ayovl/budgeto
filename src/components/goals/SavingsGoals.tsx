@@ -229,6 +229,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
               onChange={setGoalName}
               type="text"
               placeholder="e.g., Travel to Turkey"
+              onEnter={handleSave}
             />
 
             <div>
@@ -255,6 +256,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
               prefix="₨"
               min={0}
               step={100}
+              onEnter={handleSave}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -266,6 +268,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                   setLastChangedField('dates');
                 }}
                 type="date"
+                onEnter={handleSave}
               />
               <InputField
                 label="Duration (months)"
@@ -277,6 +280,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                 type="number"
                 min={1}
                 step={1}
+                onEnter={handleSave}
               />
               <InputField
                 label="Target Date"
@@ -286,6 +290,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                   setLastChangedField('dates');
                 }}
                 type="date"
+                onEnter={handleSave}
               />
             </div>
 
@@ -300,6 +305,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
               prefix="₨"
               min={0}
               step={10}
+              onEnter={handleSave}
             />
 
             {startDate && targetDate && (

@@ -41,12 +41,23 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
   const [expenseAmount, setExpenseAmount] = useState('');
   const [budgetInput, setBudgetInput] = useState(budget.toString());
 
+  React.useEffect(() => {
+    setBudgetInput(budget.toString());
+  }, [budget]);
+
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const remaining = budget - totalSpent;
 
   const handleAddExpense = () => {
     if (expenseName.trim() && parseFloat(expenseAmount) > 0) {
-      onAddExpense(expenseName.trim(), parseFloat(expenseAmount));
+      const amount = parseFloat(expenseAmount);
+      
+      // If budget is 0, automatically set budget to the expense amount
+      if (budget === 0) {
+        onBudgetChange(amount);
+      }
+      
+      onAddExpense(expenseName.trim(), amount);
       setExpenseName('');
       setExpenseAmount('');
       setIsAddingExpense(false);
@@ -100,6 +111,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               min={0}
               step={50}
               className="flex-1"
+              onEnter={handleBudgetUpdate}
             />
             <div className="flex items-end">
               <Button onClick={handleBudgetUpdate} size="sm">
@@ -139,6 +151,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               onChange={setExpenseName}
               type="text"
               placeholder={defaultPlaceholder}
+              onEnter={editingExpenseId ? handleSaveEdit : handleAddExpense}
             />
             <InputField
               label="Amount"
@@ -148,6 +161,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               prefix="₨"
               min={0}
               step={0.01}
+              onEnter={editingExpenseId ? handleSaveEdit : handleAddExpense}
             />
             <div className="flex gap-2">
               <Button

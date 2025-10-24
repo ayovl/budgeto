@@ -11,6 +11,7 @@ interface InputFieldProps {
   max?: number;
   step?: number;
   className?: string;
+  onEnter?: () => void;
 }
 
 export const InputField: React.FC<InputFieldProps> = ({
@@ -24,7 +25,14 @@ export const InputField: React.FC<InputFieldProps> = ({
   max,
   step,
   className = '',
+  onEnter,
 }) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && onEnter) {
+      onEnter();
+    }
+  };
+
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       <label className="text-sm font-medium text-gray-300">{label}</label>
@@ -38,6 +46,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           min={min}
           max={max}

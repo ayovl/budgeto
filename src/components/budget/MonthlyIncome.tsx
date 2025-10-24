@@ -25,6 +25,10 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState(income.toString());
 
+  React.useEffect(() => {
+    setInputValue(income.toString());
+  }, [income]);
+
   const handleIncomeUpdate = () => {
     const newIncome = parseFloat(inputValue) || 0;
     onIncomeChange(newIncome);
@@ -48,6 +52,7 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
               placeholder="Enter your monthly income"
               min={0}
               step={100}
+              onEnter={handleIncomeUpdate}
             />
           </div>
           <div className="flex items-end">

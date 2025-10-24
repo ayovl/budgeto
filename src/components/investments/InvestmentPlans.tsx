@@ -114,6 +114,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
               onChange={setPlanName}
               type="text"
               placeholder="e.g., Retirement Fund, Stock Portfolio"
+              onEnter={handleSave}
             />
 
             <InputField
@@ -124,6 +125,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
               prefix="₨"
               min={0}
               step={50}
+              onEnter={handleSave}
             />
 
             <InputField
@@ -133,6 +135,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
               type="number"
               min={1}
               step={1}
+              onEnter={handleSave}
             />
 
             <InputField
@@ -143,6 +146,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
               min={0}
               max={100}
               step={0.1}
+              onEnter={handleSave}
             />
 
             {totalReturn !== '0' && (
