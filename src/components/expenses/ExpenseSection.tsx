@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 import { ProgressBar } from '../ui/ProgressBar';
 import { ExpenseItem } from '../ui/ExpenseItem';
 import { Expense } from '@/lib/supabase/types';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface ExpenseSectionProps {
   title: string;
@@ -95,7 +96,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               value={budgetInput}
               onChange={setBudgetInput}
               type="number"
-              prefix="$"
+              prefix="₹"
               min={0}
               step={50}
               className="flex-1"
@@ -109,18 +110,18 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
 
           {/* Budget Summary */}
           <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="text-center p-2 bg-white rounded-lg border">
-              <p className="text-xs text-gray-600">Budget</p>
-              <p className="text-sm font-bold">${budget.toFixed(2)}</p>
+            <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
+              <p className="text-xs text-gray-400">Budget</p>
+              <p className="text-sm font-bold text-gray-100">{formatCurrency(budget)}</p>
             </div>
-            <div className="text-center p-2 bg-white rounded-lg border">
-              <p className="text-xs text-gray-600">Spent</p>
-              <p className="text-sm font-bold text-red-600">${totalSpent.toFixed(2)}</p>
+            <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
+              <p className="text-xs text-gray-400">Spent</p>
+              <p className="text-sm font-bold text-red-400">{formatCurrency(totalSpent)}</p>
             </div>
-            <div className="text-center p-2 bg-white rounded-lg border">
-              <p className="text-xs text-gray-600">Remaining</p>
-              <p className={`text-sm font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                ${remaining.toFixed(2)}
+            <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
+              <p className="text-xs text-gray-400">Remaining</p>
+              <p className={`text-sm font-bold ${remaining >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {formatCurrency(remaining)}
               </p>
             </div>
           </div>
@@ -131,7 +132,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
 
         {/* Add/Edit Expense Form */}
         {isAddingExpense && (
-          <div className="bg-white p-4 rounded-lg border-2 border-gray-300 space-y-3">
+          <div className="bg-gray-900/80 p-4 rounded-lg border border-gray-700 space-y-3">
             <InputField
               label="Expense Name"
               value={expenseName}
@@ -144,7 +145,7 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               value={expenseAmount}
               onChange={setExpenseAmount}
               type="number"
-              prefix="$"
+              prefix="₹"
               min={0}
               step={0.01}
             />

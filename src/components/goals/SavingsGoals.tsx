@@ -6,7 +6,7 @@ import { SectionContainer } from '../ui/SectionContainer';
 import { InputField } from '../ui/InputField';
 import { Button } from '../ui/Button';
 import { SavingsGoal } from '@/lib/supabase/types';
-import { ExpenseItem } from '../ui/ExpenseItem';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface SavingsGoalsProps {
   goals: SavingsGoal[];
@@ -30,61 +30,154 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [targetDate, setTargetDate] = useState('');
   const [monthlySavings, setMonthlySavings] = useState('');
+  const [durationMonths, setDurationMonths] = useState('');
   
   // Auto-calculation flag to prevent infinite loops
-  const [lastChangedField, setLastChangedField] = useState<'targetAmount' | 'monthlySavings' | 'dates' | null>(null);
+  const [lastChangedField, setLastChangedField] = useState<'targetAmount' | 'monthlySavings' | 'dates' | 'duration' | null>(null);
+
+  const clampMonths = (months: number) => (months < 1 ? 1 : Math.ceil(months));
+
+  const addMonthsToDate = (start: string, monthsToAdd: number): string => {
+    const startDt = new Date(start);
+    const newDate = new Date(startDt);
+    newDate.setMonth(newDate.getMonth() + monthsToAdd);
+    return newDate.toISOString().split('T')[0];
+  };
+
+  const calculateMonthsBetween = (start: string, end: string): number => {
+    const startDt = new Date(start);
+    const endDt = new Date(end);
+    if (Number.isNaN(startDt.getTime()) || Number.isNaN(endDt.getTime()) || endDt <= startDt) {
+      return 0;
+    }
+
+    const diffTime = endDt.getTime() - startDt.getTime();
+    const months = diffTime / (1000 * 60 * 60 * 24 * 30);
+    return clampMonths(months);
+  };
 
   useEffect(() => {
-    if (!targetAmount || !startDate || !targetDate) return;
-
     const target = parseFloat(targetAmount);
-    const start = new Date(startDate);
-    const end = new Date(targetDate);
-    
-    if (isNaN(target) || start >= end) return;
+    if (!target || !startDate) {
+      return;
+    }
 
-    const months = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    if ((lastChangedField === 'dates' || lastChangedField === 'targetAmount' || lastChangedField === null) && targetDate) {
+      const months = calculateMonthsBetween(startDate, targetDate);
+      if (months > 0 && durationMonths !== months.toString()) {
+        setDurationMonths(months.toString());
+      }
 
-    if (lastChangedField === 'targetAmount' || lastChangedField === 'dates') {
-      // Calculate monthly savings based on target and dates
-      const monthly = target / months;
-      setMonthlySavings(monthly.toFixed(2));
-    } else if (lastChangedField === 'monthlySavings' && monthlySavings) {
-      // Calculate target date based on monthly savings and target amount
-      const monthly = parseFloat(monthlySavings);
-      if (monthly > 0) {
-        const requiredMonths = Math.ceil(target / monthly);
-        const newEndDate = new Date(start);
-        newEndDate.setMonth(newEndDate.getMonth() + requiredMonths);
-        setTargetDate(newEndDate.toISOString().split('T')[0]);
+      if (months > 0 && (lastChangedField === 'dates' || lastChangedField === 'targetAmount' || (!monthlySavings && lastChangedField === null))) {
+        const monthly = target / months;
+        const formatted = Math.max(1, Math.round(monthly)).toString();
+        if (monthly > 0 && monthlySavings !== formatted) {
+          setMonthlySavings(formatted);
+        }
+      }
+    } else if ((lastChangedField === 'targetAmount' || lastChangedField === null) && durationMonths) {
+      const months = parseInt(durationMonths, 10);
+      if (months > 0) {
+        const monthly = target / months;
+        const formatted = Math.max(1, Math.round(monthly)).toString();
+        if (monthly > 0 && monthlySavings !== formatted) {
+          setMonthlySavings(formatted);
+        }
+        if (!targetDate) {
+          const newTarget = addMonthsToDate(startDate, months);
+          setTargetDate(newTarget);
+        }
       }
     }
-  }, [targetAmount, startDate, targetDate, monthlySavings, lastChangedField]);
+  }, [targetAmount, startDate, targetDate, durationMonths, monthlySavings, lastChangedField]);
+
+  useEffect(() => {
+    if (lastChangedField !== 'duration') return;
+    const months = parseInt(durationMonths, 10);
+    if (!months || months <= 0 || !startDate) return;
+
+    const safeMonths = clampMonths(months);
+    const newTarget = addMonthsToDate(startDate, safeMonths);
+    if (targetDate !== newTarget) {
+      setTargetDate(newTarget);
+    }
+
+    const target = parseFloat(targetAmount);
+    if (target > 0) {
+      const monthly = target / safeMonths;
+      const formatted = Math.max(1, Math.round(monthly)).toString();
+      if (monthlySavings !== formatted) {
+        setMonthlySavings(formatted);
+      }
+    }
+  }, [durationMonths, startDate, targetAmount, targetDate, monthlySavings, lastChangedField]);
+
+  useEffect(() => {
+    if (lastChangedField !== 'monthlySavings') return;
+    const monthly = parseFloat(monthlySavings);
+    const target = parseFloat(targetAmount);
+    if (!monthly || monthly <= 0 || !target || !startDate) return;
+
+    const monthsNeeded = clampMonths(target / monthly);
+    if (durationMonths !== monthsNeeded.toString()) {
+      setDurationMonths(monthsNeeded.toString());
+    }
+
+    const newTarget = addMonthsToDate(startDate, monthsNeeded);
+    if (targetDate !== newTarget) {
+      setTargetDate(newTarget);
+    }
+  }, [monthlySavings, targetAmount, startDate, durationMonths, targetDate, lastChangedField]);
 
   const calculateDuration = (start: string, end: string): string => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const months = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
-    
+    const months = calculateMonthsBetween(start, end);
+    if (months <= 0) return '—';
+
     if (months < 12) return `${months} month${months !== 1 ? 's' : ''}`;
-    
+
     const years = Math.floor(months / 12);
     const remainingMonths = months % 12;
-    
+
     if (remainingMonths === 0) return `${years} year${years !== 1 ? 's' : ''}`;
     return `${years} year${years !== 1 ? 's' : ''}, ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
   };
 
   const handleSave = () => {
-    if (!goalName.trim() || !targetAmount || !startDate || !targetDate || !monthlySavings) return;
+    if (!goalName.trim() || !targetAmount || !startDate) return;
+
+    const target = parseFloat(targetAmount);
+    if (!target || target <= 0) return;
+
+    let months = durationMonths ? parseInt(durationMonths, 10) : 0;
+    if ((!months || months <= 0) && targetDate) {
+      months = calculateMonthsBetween(startDate, targetDate);
+    }
+
+    if (!months || months <= 0) {
+      return;
+    }
+
+    let resolvedTargetDate = targetDate;
+    if (!resolvedTargetDate) {
+      resolvedTargetDate = addMonthsToDate(startDate, months);
+    }
+
+    let monthly = monthlySavings ? parseFloat(monthlySavings) : 0;
+    if (!monthly || monthly <= 0) {
+      monthly = Math.max(1, Math.round(target / months));
+    }
+
+    if (!resolvedTargetDate || Number.isNaN(monthly)) {
+      return;
+    }
 
     const goalData = {
       name: goalName.trim(),
       type: goalType,
-      target_amount: parseFloat(targetAmount),
+      target_amount: target,
       start_date: startDate,
-      target_date: targetDate,
-      monthly_savings: parseFloat(monthlySavings),
+      target_date: resolvedTargetDate,
+      monthly_savings: monthly,
     };
 
     if (editingId) {
@@ -105,6 +198,8 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
       setStartDate(goal.start_date);
       setTargetDate(goal.target_date);
       setMonthlySavings(goal.monthly_savings.toString());
+      const months = calculateMonthsBetween(goal.start_date, goal.target_date);
+      setDurationMonths(months ? months.toString() : '');
       setEditingId(id);
       setIsAdding(true);
     }
@@ -117,6 +212,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
     setStartDate(new Date().toISOString().split('T')[0]);
     setTargetDate('');
     setMonthlySavings('');
+    setDurationMonths('');
     setEditingId(null);
     setIsAdding(false);
     setLastChangedField(null);
@@ -126,7 +222,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
     <SectionContainer title="Savings Goals" color="green">
       <div className="space-y-4">
         {isAdding && (
-          <div className="bg-white p-4 rounded-lg border-2 border-gray-300 space-y-3">
+          <div className="bg-gray-900/80 p-4 rounded-lg border border-green-700/30 space-y-3">
             <InputField
               label="Goal Name"
               value={goalName}
@@ -136,11 +232,11 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
             />
 
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Goal Type</label>
+              <label className="text-sm font-medium text-gray-300 mb-1 block">Goal Type</label>
               <select
                 value={goalType}
                 onChange={(e) => setGoalType(e.target.value as any)}
-                className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-900 border-2 border-gray-700 rounded-lg focus:border-green-500 focus:outline-none text-white"
               >
                 <option value="short-term">Short-term</option>
                 <option value="medium-term">Medium-term</option>
@@ -156,12 +252,12 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                 setLastChangedField('targetAmount');
               }}
               type="number"
-              prefix="$"
+              prefix="₹"
               min={0}
               step={100}
             />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <InputField
                 label="Start Date"
                 value={startDate}
@@ -170,6 +266,17 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                   setLastChangedField('dates');
                 }}
                 type="date"
+              />
+              <InputField
+                label="Duration (months)"
+                value={durationMonths}
+                onChange={(val) => {
+                  setDurationMonths(val);
+                  setLastChangedField('duration');
+                }}
+                type="number"
+                min={1}
+                step={1}
               />
               <InputField
                 label="Target Date"
@@ -190,17 +297,22 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                 setLastChangedField('monthlySavings');
               }}
               type="number"
-              prefix="$"
+              prefix="₹"
               min={0}
               step={10}
             />
 
             {startDate && targetDate && (
-              <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                <p className="text-sm font-medium text-green-700 flex items-center gap-2">
+              <div className="bg-green-900/40 p-3 rounded-lg border border-green-700/40">
+                <p className="text-sm font-medium text-green-200 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Duration: {calculateDuration(startDate, targetDate)}
                 </p>
+                {durationMonths && (
+                  <p className="text-xs text-green-300 mt-1">
+                    ≈ {(parseInt(durationMonths, 10) / 12).toFixed(1)} years
+                  </p>
+                )}
               </div>
             )}
 
@@ -234,25 +346,25 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
             </div>
           ) : (
             goals.map((goal) => (
-              <div key={goal.id} className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+              <div key={goal.id} className="bg-green-900/30 border border-green-700/40 rounded-xl p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg text-green-800">{goal.name}</h3>
-                    <span className="inline-block px-2 py-1 bg-green-200 text-green-700 text-xs rounded-full mt-1">
+                    <h3 className="font-bold text-lg text-green-100">{goal.name}</h3>
+                    <span className="inline-block px-2 py-1 bg-green-800/60 text-green-200 text-xs rounded-full mt-1 capitalize">
                       {goal.type.replace('-', ' ')}
                     </span>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(goal.id)}
-                      className="p-2 hover:bg-green-200 rounded-lg transition-colors"
+                      className="p-2 hover:bg-green-800/70 rounded-lg transition-colors"
                       aria-label="Edit goal"
                     >
-                      <TrendingUp className="w-4 h-4 text-green-700" />
+                      <TrendingUp className="w-4 h-4 text-green-200" />
                     </button>
                     <button
                       onClick={() => onDeleteGoal(goal.id)}
-                      className="p-2 hover:bg-red-100 rounded-lg transition-colors text-red-600"
+                      className="p-2 hover:bg-red-900/50 rounded-lg transition-colors text-red-400"
                       aria-label="Delete goal"
                     >
                       ✕
@@ -262,20 +374,20 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-gray-600">Target Amount</p>
-                    <p className="font-bold text-green-700">${goal.target_amount.toFixed(2)}</p>
+                    <p className="text-green-200/80">Target Amount</p>
+                    <p className="font-bold text-green-100">{formatCurrency(goal.target_amount)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Monthly Savings</p>
-                    <p className="font-bold text-green-700">${goal.monthly_savings.toFixed(2)}</p>
+                    <p className="text-green-200/80">Monthly Savings</p>
+                    <p className="font-bold text-green-100">{formatCurrency(goal.monthly_savings)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Duration</p>
-                    <p className="font-medium">{calculateDuration(goal.start_date, goal.target_date)}</p>
+                    <p className="text-green-200/80">Duration</p>
+                    <p className="font-medium text-white">{calculateDuration(goal.start_date, goal.target_date)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Target Date</p>
-                    <p className="font-medium">{new Date(goal.target_date).toLocaleDateString()}</p>
+                    <p className="text-green-200/80">Target Date</p>
+                    <p className="font-medium text-white">{new Date(goal.target_date).toLocaleDateString()}</p>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface ProgressBarProps {
   current: number;
@@ -31,17 +32,17 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <div className="w-full">
-      <div className={`w-full bg-gray-200 rounded-full overflow-hidden ${heightClasses[height]}`}>
+      <div className={`w-full bg-gray-800/60 rounded-full overflow-hidden ${heightClasses[height]}`}>
         <div
           className={`${colorClasses[color]} h-full rounded-full transition-all duration-300 ease-out`}
           style={{ width: `${percentage}%` }}
         />
       </div>
       {showPercentage && (
-        <div className="flex justify-between mt-1 text-xs text-gray-600">
-          <span>${current.toFixed(2)}</span>
+        <div className="flex justify-between mt-1 text-xs text-gray-400">
+          <span>{formatCurrency(current)}</span>
           <span>{percentage.toFixed(1)}%</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formatCurrency(total)}</span>
         </div>
       )}
     </div>

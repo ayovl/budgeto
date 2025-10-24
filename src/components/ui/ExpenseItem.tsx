@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface ExpenseItemProps {
   id: string;
@@ -28,7 +29,7 @@ export const ExpenseItem: React.FC<ExpenseItemProps> = ({
     <div className={`flex items-center justify-between p-3 rounded-lg ${colorClasses[color]} transition-colors`}>
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{name}</p>
-        <p className="text-sm font-semibold">${amount.toFixed(2)}</p>
+  <p className="text-sm font-semibold">{formatCurrency(amount)}</p>
       </div>
       <div className="flex gap-2 ml-2">
         <button

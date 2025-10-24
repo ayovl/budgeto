@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { BudgetAllocationChart } from './BudgetAllocationChart';
 import { SectionContainer } from '../ui/SectionContainer';
 import { DollarSign } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface MonthlyIncomeProps {
   income: number;
@@ -43,7 +44,7 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
               value={inputValue}
               onChange={setInputValue}
               type="number"
-              prefix="$"
+              prefix="₹"
               placeholder="Enter your monthly income"
               min={0}
               step={100}
@@ -59,17 +60,17 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
         {income > 0 && (
           <>
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-blue-600 font-medium mb-1">Needs ({needsPercentage}%)</p>
-                <p className="text-lg sm:text-2xl font-bold text-blue-700">${needsAmount.toFixed(2)}</p>
+              <div className="bg-blue-900/40 border-2 border-blue-700/40 rounded-xl p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-blue-300 font-medium mb-1">Needs ({needsPercentage}%)</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-200">{formatCurrency(needsAmount)}</p>
               </div>
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-orange-600 font-medium mb-1">Wants ({wantsPercentage}%)</p>
-                <p className="text-lg sm:text-2xl font-bold text-orange-700">${wantsAmount.toFixed(2)}</p>
+              <div className="bg-orange-900/40 border-2 border-orange-700/40 rounded-xl p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-orange-300 font-medium mb-1">Wants ({wantsPercentage}%)</p>
+                <p className="text-lg sm:text-2xl font-bold text-orange-200">{formatCurrency(wantsAmount)}</p>
               </div>
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-green-600 font-medium mb-1">Savings ({savingsPercentage}%)</p>
-                <p className="text-lg sm:text-2xl font-bold text-green-700">${savingsAmount.toFixed(2)}</p>
+              <div className="bg-green-900/40 border-2 border-green-700/40 rounded-xl p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-green-300 font-medium mb-1">Savings ({savingsPercentage}%)</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-200">{formatCurrency(savingsAmount)}</p>
               </div>
             </div>
 

@@ -6,6 +6,7 @@ import { SectionContainer } from '../ui/SectionContainer';
 import { InputField } from '../ui/InputField';
 import { Button } from '../ui/Button';
 import { InvestmentPlan } from '@/lib/supabase/types';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface InvestmentPlansProps {
   plans: InvestmentPlan[];
@@ -43,7 +44,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
     // Calculate future value with compound interest
     // FV = P * [((1 + r)^n - 1) / r]
     const futureValue = monthly * (Math.pow(1 + rate, months) - 1) / rate;
-    setTotalReturn(futureValue.toFixed(2));
+    setTotalReturn(Math.round(futureValue).toString());
   }, [monthlyInvestment, durationMonths, returnRate]);
 
   const handleSave = () => {
@@ -99,7 +100,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
   };
 
   const calculateTotalInvested = (monthly: number, months: number): number => {
-    return monthly * months;
+    return Math.round(monthly * months);
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface BudgetSummaryProps {
   totalBudget: number;
@@ -27,7 +28,7 @@ export const BudgetSummary: React.FC<BudgetSummaryProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
           <p className="text-sm opacity-90 mb-1">Total Budget</p>
-          <p className="text-2xl sm:text-3xl font-bold">${totalBudget.toFixed(2)}</p>
+          <p className="text-2xl sm:text-3xl font-bold">{formatCurrency(totalBudget)}</p>
         </div>
 
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
@@ -35,7 +36,7 @@ export const BudgetSummary: React.FC<BudgetSummaryProps> = ({
             <p className="text-sm opacity-90">Total Spent</p>
             <TrendingUp className="w-4 h-4" />
           </div>
-          <p className="text-2xl sm:text-3xl font-bold">${totalSpent.toFixed(2)}</p>
+          <p className="text-2xl sm:text-3xl font-bold">{formatCurrency(totalSpent)}</p>
           <p className="text-xs opacity-75 mt-1">{spentPercentage.toFixed(1)}% of budget</p>
         </div>
 
@@ -45,7 +46,7 @@ export const BudgetSummary: React.FC<BudgetSummaryProps> = ({
             <TrendingDown className="w-4 h-4" />
           </div>
           <p className="text-2xl sm:text-3xl font-bold">
-            ${Math.abs(totalRemaining).toFixed(2)}
+            {formatCurrency(Math.abs(totalRemaining))}
           </p>
           {isOverBudget && (
             <p className="text-xs mt-1 font-semibold">Over Budget!</p>

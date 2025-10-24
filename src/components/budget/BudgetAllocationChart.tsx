@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { formatCurrency } from '@/lib/utils/currency';
 
 interface BudgetAllocationChartProps {
   needs: number;
@@ -51,10 +52,10 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border-2 border-gray-200">
+        <div className="bg-gray-900/90 text-white p-3 rounded-lg shadow-lg border border-gray-700">
           <p className="font-semibold">{payload[0].name}</p>
           <p className="text-lg font-bold" style={{ color: payload[0].payload.color }}>
-            ${payload[0].value.toFixed(2)}
+            {formatCurrency(payload[0].value)}
           </p>
         </div>
       );
@@ -86,8 +87,8 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
             height={36}
             iconType="circle"
             formatter={(value, entry: any) => (
-              <span className="text-sm font-medium">
-                {value}: ${entry.payload.value.toFixed(2)}
+              <span className="text-sm font-medium text-gray-200">
+                {value}: {formatCurrency(entry.payload.value)}
               </span>
             )}
           />
