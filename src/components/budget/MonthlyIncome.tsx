@@ -70,6 +70,12 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
 
         {income > 0 && (
           <>
+            <div className="bg-purple-900/20 border border-purple-700/30 rounded-lg p-2 mb-2">
+              <p className="text-xs text-purple-300 text-center">
+                💡 Recommended: 50% Needs • 30% Wants • 20% Savings
+              </p>
+            </div>
+            
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <div className="bg-blue-900/40 border-2 border-blue-700/40 rounded-xl p-3 sm:p-4">
                 <p className="text-xs sm:text-sm text-blue-300 font-medium mb-1">Needs ({needsPercentage}%)</p>

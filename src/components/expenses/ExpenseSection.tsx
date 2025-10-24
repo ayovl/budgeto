@@ -57,11 +57,6 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
     if (expenseName.trim() && parseFloat(expenseAmount) > 0) {
       const amount = parseFloat(expenseAmount);
       
-      // If budget is 0, automatically set budget to the expense amount
-      if (budget === 0) {
-        onBudgetChange(amount);
-      }
-      
       onAddExpense(expenseName.trim(), amount);
       setExpenseName('');
       setExpenseAmount('');

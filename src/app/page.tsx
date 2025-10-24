@@ -56,6 +56,32 @@ export default function Home() {
   };
 
   const handleAddExpense = async (category: 'needs' | 'wants' | 'savings', name: string, amount: number) => {
+    // Get current budget for this category
+    const currentBudget = category === 'needs' ? needsBudget : category === 'wants' ? wantsBudget : savingsBudget;
+    const currentPercentage = category === 'needs' ? settings.needs_percentage : category === 'wants' ? settings.wants_percentage : settings.savings_percentage;
+    
+    // If budget is 0 or expenses would exceed budget, auto-increase the budget
+    const categoryExpenses = expenses.filter((e) => e.category === category);
+    const currentSpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const newTotal = currentSpent + amount;
+    
+    if (newTotal > currentBudget) {
+      // Calculate new percentage needed
+      if (monthlyIncome > 0) {
+        const newPercentage = Math.ceil((newTotal / monthlyIncome) * 100);
+        const otherCategories = ['needs', 'wants', 'savings'].filter(c => c !== category);
+        const otherPercentages = otherCategories.reduce((sum, cat) => {
+          return sum + (cat === 'needs' ? settings.needs_percentage : cat === 'wants' ? settings.wants_percentage : settings.savings_percentage);
+        }, 0);
+        
+        // Only auto-adjust if it doesn't exceed 100%
+        if (newPercentage + otherPercentages <= 100) {
+          const updateKey = category === 'needs' ? 'needs_percentage' : category === 'wants' ? 'wants_percentage' : 'savings_percentage';
+          await updateSettings({ [updateKey]: newPercentage });
+        }
+      }
+    }
+    
     await addExpense({
       category,
       name,
