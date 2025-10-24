@@ -121,7 +121,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
               value={monthlyInvestment}
               onChange={setMonthlyInvestment}
               type="number"
-              prefix="$"
+              prefix="₨"
               min={0}
               step={50}
             />
@@ -152,17 +152,17 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
                   <div className="flex justify-between">
                     <span className="text-gray-600">Total Invested:</span>
                     <span className="font-bold">
-                      ${calculateTotalInvested(parseFloat(monthlyInvestment) || 0, parseInt(durationMonths) || 0).toFixed(2)}
+                      {formatCurrency(calculateTotalInvested(parseFloat(monthlyInvestment) || 0, parseInt(durationMonths) || 0))}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Estimated Return:</span>
-                    <span className="font-bold text-purple-700 text-xl">${totalReturn}</span>
+                    <span className="font-bold text-purple-700 text-xl">{formatCurrency(parseFloat(totalReturn))}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
                     <span>Profit:</span>
                     <span className="font-bold">
-                      ${(parseFloat(totalReturn) - calculateTotalInvested(parseFloat(monthlyInvestment) || 0, parseInt(durationMonths) || 0)).toFixed(2)}
+                      {formatCurrency(parseFloat(totalReturn) - calculateTotalInvested(parseFloat(monthlyInvestment) || 0, parseInt(durationMonths) || 0))}
                     </span>
                   </div>
                 </div>
@@ -226,7 +226,7 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
                 <div className="grid grid-cols-2 gap-3 text-sm mb-3">
                   <div>
                     <p className="text-gray-600">Monthly Investment</p>
-                    <p className="font-bold text-purple-700">${plan.monthly_investment.toFixed(2)}</p>
+                    <p className="font-bold text-purple-700">{formatCurrency(plan.monthly_investment)}</p>
                   </div>
                   <div>
                     <p className="text-gray-600">Return Rate</p>
@@ -238,18 +238,18 @@ export const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-xs text-gray-600">Total Invested</p>
-                      <p className="font-semibold">${calculateTotalInvested(plan.monthly_investment, plan.duration_months).toFixed(2)}</p>
+                      <p className="font-semibold">{formatCurrency(calculateTotalInvested(plan.monthly_investment, plan.duration_months))}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-600">Estimated Return</p>
-                      <p className="font-bold text-lg text-purple-700">${plan.total_return.toFixed(2)}</p>
+                      <p className="font-bold text-lg text-purple-700">{formatCurrency(plan.total_return)}</p>
                     </div>
                   </div>
                   <div className="mt-2 pt-2 border-t border-purple-100">
                     <div className="flex justify-between">
                       <span className="text-xs text-green-600">Projected Profit:</span>
                       <span className="font-bold text-green-600">
-                        ${(plan.total_return - calculateTotalInvested(plan.monthly_investment, plan.duration_months)).toFixed(2)}
+                        {formatCurrency(plan.total_return - calculateTotalInvested(plan.monthly_investment, plan.duration_months))}
                       </span>
                     </div>
                   </div>
