@@ -199,13 +199,12 @@ export default function Home() {
       // Add the goal first
       await addGoal(goalData);
       
-      // Then add corresponding monthly expense
-      await addExpense({
-        category: goalData.category || 'savings',
-        name: `${goalData.name} (Goal)`,
-        amount: goalData.monthly_savings || 0,
-        date: new Date().toISOString().split('T')[0],
-      });
+      // Then add corresponding monthly expense using the proper handler that updates percentages
+      await handleAddExpense(
+        goalData.category || 'savings',
+        `${goalData.name} (Goal)`,
+        goalData.monthly_savings || 0
+      );
     } catch (error) {
       console.error('Error adding goal and expense:', error);
       alert('Failed to add goal and corresponding expense. Please try again.');
@@ -217,29 +216,23 @@ export default function Home() {
       // Find the current goal to get the old expense
       const currentGoal = goals.find(g => g.id === id);
       if (currentGoal) {
-        // Find and update the corresponding expense
+        // Find the corresponding expense
         const expenseName = `${currentGoal.name} (Goal)`;
         const correspondingExpense = expenses.find(e => 
           e.category === currentGoal.category && e.name === expenseName
         );
         
         if (correspondingExpense) {
-          // Update existing expense
-          await updateExpense(correspondingExpense.id, {
-            category: goalData.category || 'savings',
-            name: `${goalData.name} (Goal)`,
-            amount: goalData.monthly_savings || 0,
-            date: correspondingExpense.date,
-          });
-        } else {
-          // Create new expense if it doesn't exist
-          await addExpense({
-            category: goalData.category || 'savings',
-            name: `${goalData.name} (Goal)`,
-            amount: goalData.monthly_savings || 0,
-            date: new Date().toISOString().split('T')[0],
-          });
+          // Delete the old expense first using proper handler
+          await handleDeleteExpense(correspondingExpense.id);
         }
+        
+        // Add the new expense with updated data using proper handler
+        await handleAddExpense(
+          goalData.category || 'savings',
+          `${goalData.name} (Goal)`,
+          goalData.monthly_savings || 0
+        );
       }
       
       // Update the goal
@@ -255,14 +248,14 @@ export default function Home() {
       // Find the goal to get the expense name
       const currentGoal = goals.find(g => g.id === id);
       if (currentGoal) {
-        // Find and delete the corresponding expense
+        // Find and delete the corresponding expense using proper handler
         const expenseName = `${currentGoal.name} (Goal)`;
         const correspondingExpense = expenses.find(e => 
           e.category === currentGoal.category && e.name === expenseName
         );
         
         if (correspondingExpense) {
-          await deleteExpense(correspondingExpense.id);
+          await handleDeleteExpense(correspondingExpense.id);
         }
       }
       
