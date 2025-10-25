@@ -42,8 +42,8 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
     'url(#remainingGradient)'
   ];
 
-  // Custom label component for percentages on slices
-  const renderPercentageLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  // Custom label component for all information inside pie slices
+  const renderCombinedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -52,71 +52,40 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
     if (percent < 0.05) return null; // Don't show label for very small slices
 
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor={x > cx ? 'start' : 'end'} 
-        dominantBaseline="central"
-        className="font-bold text-lg drop-shadow-lg"
-        style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))' }}
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
-
-  // Custom label component for external labels with leader lines
-  const renderExternalLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, value }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = outerRadius + 50;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    
-    // Leader line points
-    const lineStartRadius = outerRadius + 5;
-    const lineStartX = cx + lineStartRadius * Math.cos(-midAngle * RADIAN);
-    const lineStartY = cy + lineStartRadius * Math.sin(-midAngle * RADIAN);
-    
-    const lineMidRadius = outerRadius + 35;
-    const lineMidX = cx + lineMidRadius * Math.cos(-midAngle * RADIAN);
-    const lineMidY = cy + lineMidRadius * Math.sin(-midAngle * RADIAN);
-
-    return (
       <g>
-        {/* Leader line */}
-        <path
-          d={`M${lineStartX},${lineStartY}L${lineMidX},${lineMidY}L${x},${y}`}
-          stroke="rgba(255,255,255,0.6)"
-          strokeWidth={2}
-          fill="none"
-        />
-        {/* Label background */}
-        <rect
-          x={x - (x > cx ? 0 : 120)}
-          y={y - 25}
-          width={120}
-          height={50}
-          rx={8}
-          fill="rgba(0,0,0,0.8)"
-          stroke="rgba(255,255,255,0.2)"
-          strokeWidth={1}
-        />
+        {/* Percentage */}
+        <text
+          x={x}
+          y={y - 8}
+          fill="white"
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="font-bold text-lg drop-shadow-lg"
+          style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))' }}
+        >
+          {`${(percent * 100).toFixed(0)}%`}
+        </text>
         {/* Category name */}
         <text
-          x={x - (x > cx ? -10 : 110)}
-          y={y - 8}
-          textAnchor={x > cx ? 'start' : 'end'}
-          className="text-sm font-semibold fill-white"
+          x={x}
+          y={y + 4}
+          fill="white"
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="font-semibold text-sm drop-shadow-lg"
+          style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))' }}
         >
           {name}
         </text>
         {/* Amount */}
         <text
-          x={x - (x > cx ? -10 : 110)}
-          y={y + 12}
-          textAnchor={x > cx ? 'start' : 'end'}
-          className="text-xs font-medium fill-gray-300"
+          x={x}
+          y={y + 16}
+          fill="white"
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="font-medium text-xs drop-shadow-lg opacity-90"
+          style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))' }}
         >
           {formatCurrency(value)}
         </text>
@@ -156,7 +125,7 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={renderPercentageLabel}
+                label={renderCombinedLabel}
                 outerRadius={140}
                 innerRadius={40}
                 fill="#8884d8"
@@ -174,20 +143,6 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
                   />
                 ))}
               </Pie>
-              
-              {/* External labels with leader lines */}
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={renderExternalLabel}
-                outerRadius={140}
-                innerRadius={40}
-                fill="transparent"
-                dataKey="value"
-                stroke="none"
-              />
             </PieChart>
           </ResponsiveContainer>
           
@@ -210,19 +165,6 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
           </div>
         </div>
       </div>
-      
-      {/* Simplified budget summary */}
-      {monthlyIncome > 0 && (
-        <div className="mt-6 p-4 bg-linear-to-r from-purple-900/20 to-blue-900/20 border border-purple-700/30 rounded-xl">
-          <div className="text-center">
-            <span className="text-sm text-gray-300">Total Allocated: </span>
-            <span className="text-lg font-semibold text-white">{formatCurrency(totalSpent)}</span>
-            <span className="text-sm text-gray-400 ml-2">
-              ({Math.round((totalSpent / monthlyIncome) * 100)}% of income)
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
