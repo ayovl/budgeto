@@ -77,25 +77,10 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
 
         {income > 0 && (
           <>
-            <div className="bg-purple-900/20 border border-purple-700/30 rounded-lg p-2 mb-2">
-              <p className="text-xs text-purple-300 text-center">
+            <div className="bg-purple-900/20 border border-purple-700/30 rounded-lg p-3 mb-4">
+              <p className="text-sm text-purple-300 text-center">
                 💡 Recommended: 50% Needs • 30% Wants • 20% Savings
               </p>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
-              <div className="bg-blue-900/40 border-2 border-blue-700/40 rounded-xl p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-blue-300 font-medium mb-1">Needs ({needsPercentage}%)</p>
-                <p className="text-lg sm:text-2xl font-bold text-blue-200">{formatCurrency(needsAmount)}</p>
-              </div>
-              <div className="bg-orange-900/40 border-2 border-orange-700/40 rounded-xl p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-orange-300 font-medium mb-1">Wants ({wantsPercentage}%)</p>
-                <p className="text-lg sm:text-2xl font-bold text-orange-200">{formatCurrency(wantsAmount)}</p>
-              </div>
-              <div className="bg-green-900/40 border-2 border-green-700/40 rounded-xl p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-green-300 font-medium mb-1">Savings ({savingsPercentage}%)</p>
-                <p className="text-lg sm:text-2xl font-bold text-green-200">{formatCurrency(savingsAmount)}</p>
-              </div>
             </div>
 
             <BudgetAllocationChart
@@ -103,6 +88,9 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
               wants={wantsAmount}
               savings={savingsAmount}
               monthlyIncome={income}
+              needsPercentage={needsPercentage}
+              wantsPercentage={wantsPercentage}
+              savingsPercentage={savingsPercentage}
             />
           </>
         )}
