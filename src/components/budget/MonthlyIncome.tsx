@@ -14,6 +14,9 @@ interface MonthlyIncomeProps {
   needsPercentage: number;
   wantsPercentage: number;
   savingsPercentage: number;
+  needsTotal: number;
+  wantsTotal: number;
+  savingsTotal: number;
 }
 
 export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
@@ -22,6 +25,9 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
   needsPercentage,
   wantsPercentage,
   savingsPercentage,
+  needsTotal,
+  wantsTotal,
+  savingsTotal,
 }) => {
   const [inputValue, setInputValue] = useState(income.toString());
   const [lastIncome, setLastIncome] = useState(income);
@@ -40,9 +46,10 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
     await onIncomeChange(newIncome);
   };
 
-  const needsAmount = (income * needsPercentage) / 100;
-  const wantsAmount = (income * wantsPercentage) / 100;
-  const savingsAmount = (income * savingsPercentage) / 100;
+  // Use actual expense totals instead of calculated percentages
+  const needsAmount = needsTotal;
+  const wantsAmount = wantsTotal;
+  const savingsAmount = savingsTotal;
 
   return (
     <SectionContainer title="Monthly Budget Overview" color="purple">

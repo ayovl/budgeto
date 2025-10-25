@@ -47,6 +47,11 @@ export default function Home() {
   const wantsExpenses = expenses.filter((e) => e.category === 'wants');
   const savingsExpenses = expenses.filter((e) => e.category === 'savings');
 
+  // Calculate actual totals spent in each category
+  const needsTotal = needsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const wantsTotal = wantsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const savingsTotal = savingsExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const totalBudget = monthlyIncome; // Total budget is simply the monthly income
   const totalRemaining = totalBudget - totalSpent;
@@ -167,6 +172,9 @@ export default function Home() {
           needsPercentage={settings.needs_percentage}
           wantsPercentage={settings.wants_percentage}
           savingsPercentage={settings.savings_percentage}
+          needsTotal={needsTotal}
+          wantsTotal={wantsTotal}
+          savingsTotal={savingsTotal}
         />
 
         {/* Budget Summary */}
