@@ -37,15 +37,16 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
   // Filter out items with zero or very small values (less than 1 to account for rounding)
   const data = allData.filter(item => item.value >= 1);
 
-  // Calculate percentages for the pie chart
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  // Use the correct percentages from budget sections, not calculated from spent amounts
+  const totalPercentage = data.reduce((sum, item) => sum + item.percentage, 0);
   
-  // Create conic gradient string for CSS
+  // Create conic gradient string for CSS using actual budget percentages
   let gradientString = '';
   let currentPercentage = 0;
   
   data.forEach((item, index) => {
-    const percentage = (item.value / total) * 100;
+    // Use the actual percentage from the budget section
+    const percentage = item.percentage;
     if (index > 0) gradientString += ', ';
     gradientString += `${item.color} ${currentPercentage}% ${currentPercentage + percentage}%`;
     currentPercentage += percentage;
@@ -114,7 +115,8 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
         {/* Legend below the pie chart */}
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4">
           {data.map((item, index) => {
-            const percentage = Math.round((item.value / total) * 100);
+            // Use the actual percentage from budget sections
+            const percentage = item.percentage;
             return (
               <div
                 key={index}
