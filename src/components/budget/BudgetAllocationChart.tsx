@@ -56,10 +56,10 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
     return (
       <div className="w-full">
         <div className="flex justify-center px-4">
-          <div className="w-full max-w-6xl h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] flex items-center justify-center">
+          <div className="w-full max-w-4xl h-[400px] flex items-center justify-center">
             <div className="text-center text-gray-500">
-              <p className="text-xl md:text-2xl lg:text-3xl">No budget data to display</p>
-              <p className="text-base md:text-lg mt-4">Add some expenses to see your budget allocation</p>
+              <p className="text-lg md:text-xl">No budget data to display</p>
+              <p className="text-sm md:text-base mt-2">Add some expenses to see your budget allocation</p>
             </div>
           </div>
         </div>
@@ -69,29 +69,38 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
 
   return (
     <div className="w-full">
-      <div className="flex justify-center px-4">
-        {/* CSS-based Pie Chart - HUGE on Desktop */}
-        <div className="w-full max-w-6xl h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] xl:h-[900px] relative flex items-center justify-center">
+      <div className="flex justify-center px-2 sm:px-4">
+        {/* Enhanced Pie Chart - Properly Sized */}
+        <div className="w-full max-w-4xl h-[400px] sm:h-[500px] lg:h-[600px] relative flex items-center justify-center">
           
-          {/* Pie Chart using CSS conic-gradient */}
+          {/* Pie Chart using CSS conic-gradient with enhanced styling */}
           <div 
-            className="w-[350px] h-[350px] sm:w-[450px] sm:h-[450px] md:w-[550px] md:h-[550px] lg:w-[650px] lg:h-[650px] xl:w-[750px] xl:h-[750px] rounded-full shadow-2xl relative"
+            className="w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px] lg:w-[480px] lg:h-[480px] rounded-full relative"
             style={{
               background: `conic-gradient(${gradientString})`,
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              filter: 'drop-shadow(0 10px 25px rgba(0, 0, 0, 0.5))',
             }}
           >
-            {/* Inner circle to create donut effect */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] md:w-[220px] md:h-[220px] lg:w-[260px] lg:h-[260px] xl:w-[300px] xl:h-[300px] bg-gray-950 rounded-full flex items-center justify-center border-4 border-white/20">
+            {/* Inner circle to create donut effect with enhanced styling */}
+            <div 
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-full flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(145deg, #0f0f23, #1a1a2e)',
+                border: '3px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.4)',
+              }}
+            >
               {/* Center total display */}
-              <div className="text-center">
-                <div className="text-xs sm:text-sm md:text-base text-gray-300 mb-1 sm:mb-2">Total Income</div>
-                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-1 sm:mb-2">
+              <div className="text-center px-2">
+                <div className="text-xs sm:text-sm text-gray-300 mb-1">Total Income</div>
+                <div className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold text-white mb-1">
                   {formatCurrency(monthlyIncome)}
                 </div>
                 {remaining > 0 && (
                   <>
-                    <div className="text-xs sm:text-sm text-green-300 mt-1 sm:mt-2">Available</div>
-                    <div className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-green-200">
+                    <div className="text-xs text-green-300 mt-1">Available</div>
+                    <div className="text-xs sm:text-sm md:text-base font-semibold text-green-200">
                       {formatCurrency(remaining)}
                     </div>
                   </>
@@ -100,52 +109,36 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
             </div>
           </div>
 
-          {/* Floating labels positioned around the pie */}
+        </div>
+        
+        {/* Legend below the pie chart */}
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4">
           {data.map((item, index) => {
-            const total = data.reduce((sum, d) => sum + d.value, 0);
-            const percentage = (item.value / total) * 100;
-            
-            // Calculate position for each label (positioning them around the pie)
-            let cumulativePercent = 0;
-            for (let i = 0; i < index; i++) {
-              cumulativePercent += (data[i].value / total) * 100;
-            }
-            const midPercent = cumulativePercent + (percentage / 2);
-            const angle = (midPercent / 100) * 360 - 90; // Start from top
-            const radians = (angle * Math.PI) / 180;
-            
-            // Position labels outside the pie chart
-            const radius = window.innerWidth >= 1280 ? 420 : // xl
-                          window.innerWidth >= 1024 ? 370 : // lg  
-                          window.innerWidth >= 768 ? 320 : // md
-                          window.innerWidth >= 640 ? 270 : // sm
-                          220; // base
-            
-            const x = Math.cos(radians) * radius;
-            const y = Math.sin(radians) * radius;
-            
-            return percentage > 5 ? ( // Only show labels for segments > 5%
+            const percentage = Math.round((item.value / total) * 100);
+            return (
               <div
                 key={index}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white rounded-lg p-2 sm:p-3 md:p-4 border border-white/20 backdrop-blur-sm shadow-xl"
-                style={{
-                  left: `calc(50% + ${x}px)`,
-                  top: `calc(50% + ${y}px)`,
-                }}
+                className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-200"
               >
-                <div className="text-center min-w-20 sm:min-w-24 md:min-w-28">
-                  <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-1">
-                    {Math.round(percentage)}%
-                  </div>
-                  <div className="text-sm sm:text-base md:text-lg font-semibold mb-1">
-                    {item.name}
-                  </div>
-                  <div className="text-xs sm:text-sm md:text-base opacity-90">
-                    {formatCurrency(item.value)}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-4 h-4 rounded-full shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">
+                      {item.name}
+                    </div>
+                    <div className="text-xs text-gray-300 mt-1">
+                      {formatCurrency(item.value)}
+                    </div>
+                    <div className="text-xs font-bold text-gray-100 mt-1">
+                      {percentage}%
+                    </div>
                   </div>
                 </div>
               </div>
-            ) : null;
+            );
           })}
         </div>
       </div>
