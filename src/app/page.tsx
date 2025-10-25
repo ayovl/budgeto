@@ -193,6 +193,87 @@ export default function Home() {
     }
   };
 
+  // Enhanced goal handlers that also manage corresponding expenses
+  const handleAddGoal = async (goalData: Parameters<typeof addGoal>[0]) => {
+    try {
+      // Add the goal first
+      await addGoal(goalData);
+      
+      // Then add corresponding monthly expense
+      await addExpense({
+        category: goalData.category || 'savings',
+        name: `${goalData.name} (Goal)`,
+        amount: goalData.monthly_savings || 0,
+        date: new Date().toISOString().split('T')[0],
+      });
+    } catch (error) {
+      console.error('Error adding goal and expense:', error);
+      alert('Failed to add goal and corresponding expense. Please try again.');
+    }
+  };
+
+  const handleUpdateGoal = async (id: string, goalData: Parameters<typeof updateGoal>[1]) => {
+    try {
+      // Find the current goal to get the old expense
+      const currentGoal = goals.find(g => g.id === id);
+      if (currentGoal) {
+        // Find and update the corresponding expense
+        const expenseName = `${currentGoal.name} (Goal)`;
+        const correspondingExpense = expenses.find(e => 
+          e.category === currentGoal.category && e.name === expenseName
+        );
+        
+        if (correspondingExpense) {
+          // Update existing expense
+          await updateExpense(correspondingExpense.id, {
+            category: goalData.category || 'savings',
+            name: `${goalData.name} (Goal)`,
+            amount: goalData.monthly_savings || 0,
+            date: correspondingExpense.date,
+          });
+        } else {
+          // Create new expense if it doesn't exist
+          await addExpense({
+            category: goalData.category || 'savings',
+            name: `${goalData.name} (Goal)`,
+            amount: goalData.monthly_savings || 0,
+            date: new Date().toISOString().split('T')[0],
+          });
+        }
+      }
+      
+      // Update the goal
+      await updateGoal(id, goalData);
+    } catch (error) {
+      console.error('Error updating goal and expense:', error);
+      alert('Failed to update goal and corresponding expense. Please try again.');
+    }
+  };
+
+  const handleDeleteGoal = async (id: string) => {
+    try {
+      // Find the goal to get the expense name
+      const currentGoal = goals.find(g => g.id === id);
+      if (currentGoal) {
+        // Find and delete the corresponding expense
+        const expenseName = `${currentGoal.name} (Goal)`;
+        const correspondingExpense = expenses.find(e => 
+          e.category === currentGoal.category && e.name === expenseName
+        );
+        
+        if (correspondingExpense) {
+          await deleteExpense(correspondingExpense.id);
+        }
+      }
+      
+      // Delete the goal
+      await deleteGoal(id);
+    } catch (error) {
+      console.error('Error deleting goal and expense:', error);
+      alert('Failed to delete goal and corresponding expense. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-950 via-gray-900 to-gray-950">
       {/* Header */}
@@ -292,9 +373,9 @@ export default function Home() {
         {/* Savings Goals */}
         <SavingsGoals
           goals={goals}
-          onAddGoal={addGoal}
-          onEditGoal={updateGoal}
-          onDeleteGoal={deleteGoal}
+          onAddGoal={handleAddGoal}
+          onEditGoal={handleUpdateGoal}
+          onDeleteGoal={handleDeleteGoal}
         />
 
         {/* Investment Plans */}
