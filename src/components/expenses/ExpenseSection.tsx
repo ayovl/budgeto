@@ -20,6 +20,8 @@ interface ExpenseSectionProps {
   onEditExpense: (id: string, name: string, amount: number) => void;
   onDeleteExpense: (id: string) => void;
   defaultPlaceholder?: string;
+  monthlyIncome: number;
+  totalSpentAcrossAll: number;
 }
 
 export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
@@ -32,23 +34,48 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
   onEditExpense,
   onDeleteExpense,
   defaultPlaceholder = 'New expense',
+  monthlyIncome,
+  totalSpentAcrossAll,
 }) => {
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [expenseName, setExpenseName] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
+  const [inputMode, setInputMode] = useState<'amount' | 'percentage'>('amount');
+  const [expensePercentage, setExpensePercentage] = useState('');
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  
+  // Calculate remaining budget for percentage input
+  const remainingBudget = monthlyIncome - totalSpentAcrossAll;
+  const remainingPercentage = monthlyIncome > 0 ? Math.round(((remainingBudget / monthlyIncome) * 100)) : 0;
+  
+  // Calculate amount from percentage input
+  const calculateAmountFromPercentage = (percentage: number): number => {
+    return Math.round((percentage / 100) * monthlyIncome);
+  };
 
   const handleAddExpense = () => {
-    if (expenseName.trim() && parseFloat(expenseAmount) > 0) {
-      const amount = parseFloat(expenseAmount);
-      
-      onAddExpense(expenseName.trim(), amount);
-      setExpenseName('');
-      setExpenseAmount('');
-      setIsAddingExpense(false);
+    let amount = 0;
+    
+    if (inputMode === 'amount') {
+      if (!expenseName.trim() || !expenseAmount || parseFloat(expenseAmount) <= 0) return;
+      amount = parseFloat(expenseAmount);
+    } else {
+      if (!expenseName.trim() || !expensePercentage || parseFloat(expensePercentage) <= 0) return;
+      const percentage = parseFloat(expensePercentage);
+      if (percentage > remainingPercentage) {
+        alert(`Cannot allocate ${percentage}%. Only ${remainingPercentage}% remaining.`);
+        return;
+      }
+      amount = calculateAmountFromPercentage(percentage);
     }
+    
+    onAddExpense(expenseName.trim(), amount);
+    setExpenseName('');
+    setExpenseAmount('');
+    setExpensePercentage('');
+    setIsAddingExpense(false);
   };
 
   const handleEditExpense = (id: string) => {
@@ -56,24 +83,42 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
     if (expense) {
       setExpenseName(expense.name);
       setExpenseAmount(expense.amount.toString());
+      setExpensePercentage(''); // Clear percentage when editing existing expense
+      setInputMode('amount'); // Default to amount mode for editing
       setEditingExpenseId(id);
       setIsAddingExpense(true);
     }
   };
 
   const handleSaveEdit = () => {
-    if (editingExpenseId && expenseName.trim() && parseFloat(expenseAmount) > 0) {
-      onEditExpense(editingExpenseId, expenseName.trim(), parseFloat(expenseAmount));
-      setExpenseName('');
-      setExpenseAmount('');
-      setEditingExpenseId(null);
-      setIsAddingExpense(false);
+    if (!editingExpenseId || !expenseName.trim()) return;
+    
+    let amount = 0;
+    if (inputMode === 'amount') {
+      if (!expenseAmount || parseFloat(expenseAmount) <= 0) return;
+      amount = parseFloat(expenseAmount);
+    } else {
+      if (!expensePercentage || parseFloat(expensePercentage) <= 0) return;
+      const percentage = parseFloat(expensePercentage);
+      if (percentage > remainingPercentage) {
+        alert(`Cannot allocate ${percentage}%. Only ${remainingPercentage}% remaining.`);
+        return;
+      }
+      amount = calculateAmountFromPercentage(percentage);
     }
+    
+    onEditExpense(editingExpenseId, expenseName.trim(), amount);
+    setExpenseName('');
+    setExpenseAmount('');
+    setExpensePercentage('');
+    setEditingExpenseId(null);
+    setIsAddingExpense(false);
   };
 
   const handleCancelEdit = () => {
     setExpenseName('');
     setExpenseAmount('');
+    setExpensePercentage('');
     setEditingExpenseId(null);
     setIsAddingExpense(false);
   };
@@ -98,16 +143,91 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
               placeholder={defaultPlaceholder}
               onEnter={editingExpenseId ? handleSaveEdit : handleAddExpense}
             />
-            <InputField
-              label="Amount"
-              value={expenseAmount}
-              onChange={setExpenseAmount}
-              type="number"
-              prefix="₨"
-              min={0}
-              step={0.01}
-              onEnter={editingExpenseId ? handleSaveEdit : handleAddExpense}
-            />
+            
+            {/* Input Mode Toggle - Only show for adding new expenses */}
+            {!editingExpenseId && (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-gray-300 block">Input Mode</label>
+                <div className="flex gap-1 bg-gray-800 rounded-lg p-1">
+                  <button
+                    onClick={() => setInputMode('amount')}
+                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-colors ${
+                      inputMode === 'amount'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    Amount
+                  </button>
+                  <button
+                    onClick={() => setInputMode('percentage')}
+                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-colors ${
+                      inputMode === 'percentage'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    Percentage
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Amount Input */}
+            {inputMode === 'amount' && (
+              <InputField
+                label="Amount"
+                value={expenseAmount}
+                onChange={setExpenseAmount}
+                type="number"
+                prefix="₨"
+                min={0}
+                step={0.01}
+                onEnter={editingExpenseId ? handleSaveEdit : handleAddExpense}
+              />
+            )}
+            
+            {/* Percentage Input */}
+            {inputMode === 'percentage' && !editingExpenseId && (
+              <div className="space-y-2">
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-600">
+                  <p className="text-xs text-gray-400 mb-1">Available to Allocate</p>
+                  <p className="text-sm font-semibold text-green-400">
+                    {remainingPercentage}% = {formatCurrency(remainingBudget)}
+                  </p>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-300">Percentage</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={expensePercentage}
+                      onChange={(e) => setExpensePercentage(e.target.value)}
+                      min={0}
+                      max={remainingPercentage}
+                      step={0.1}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddExpense()}
+                      placeholder="0"
+                      className="w-full px-3 py-2 pr-8 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
+                      %
+                    </span>
+                  </div>
+                </div>
+                
+                {expensePercentage && parseFloat(expensePercentage) > 0 && (
+                  <div className="bg-gray-800/30 rounded-lg p-2 border border-gray-600">
+                    <p className="text-xs text-gray-400">Will add:</p>
+                    <p className="text-sm font-medium text-blue-400">
+                      {formatCurrency(calculateAmountFromPercentage(parseFloat(expensePercentage)))}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            
             <div className="flex gap-2">
               <Button
                 onClick={editingExpenseId ? handleSaveEdit : handleAddExpense}

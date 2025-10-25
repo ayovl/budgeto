@@ -199,6 +199,8 @@ export default function Home() {
               onEditExpense={handleEditExpense}
               onDeleteExpense={handleDeleteExpense}
               defaultPlaceholder="Internet Bill"
+              monthlyIncome={monthlyIncome}
+              totalSpentAcrossAll={totalSpent}
             />
 
             <ExpenseSection
@@ -211,6 +213,8 @@ export default function Home() {
               onEditExpense={handleEditExpense}
               onDeleteExpense={handleDeleteExpense}
               defaultPlaceholder="Entertainment"
+              monthlyIncome={monthlyIncome}
+              totalSpentAcrossAll={totalSpent}
             />
 
             <ExpenseSection
@@ -223,6 +227,8 @@ export default function Home() {
               onEditExpense={handleEditExpense}
               onDeleteExpense={handleDeleteExpense}
               defaultPlaceholder="Emergency Fund"
+              monthlyIncome={monthlyIncome}
+              totalSpentAcrossAll={totalSpent}
             />
           </div>
         )}
