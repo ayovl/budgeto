@@ -155,30 +155,6 @@ export default function Home() {
               color="blue"
               budget={needsBudget}
               expenses={needsExpenses}
-              onBudgetChange={async (budget) => {
-                // Calculate exact percentage with 2 decimal places
-                const newPercentage = Math.round((budget / monthlyIncome) * 10000) / 100;
-                const otherPercentages = settings.wants_percentage + settings.savings_percentage;
-                const totalPercentage = newPercentage + otherPercentages;
-                
-                console.log('Needs budget change:', {
-                  budget,
-                  newPercentage,
-                  wants_percentage: settings.wants_percentage,
-                  savings_percentage: settings.savings_percentage,
-                  otherPercentages,
-                  totalPercentage,
-                  wouldExceed: totalPercentage > 100
-                });
-                
-                // Only allow if total doesn't exceed 100% (with small tolerance for floating point)
-                if (totalPercentage <= 100.01) {
-                  await updateSettings({ needs_percentage: newPercentage });
-                } else {
-                  // Revert to previous value by not updating
-                  alert(`Cannot set budget. Total would exceed 100%\nNeeds: ${newPercentage}%\nWants: ${settings.wants_percentage}%\nSavings: ${settings.savings_percentage}%\nTotal: ${totalPercentage.toFixed(2)}%`);
-                }
-              }}
               onAddExpense={(name, amount) => handleAddExpense('needs', name, amount)}
               onEditExpense={handleEditExpense}
               onDeleteExpense={deleteExpense}
@@ -191,29 +167,6 @@ export default function Home() {
               color="orange"
               budget={wantsBudget}
               expenses={wantsExpenses}
-              onBudgetChange={async (budget) => {
-                // Calculate exact percentage with 2 decimal places
-                const newPercentage = Math.round((budget / monthlyIncome) * 10000) / 100;
-                const otherPercentages = settings.needs_percentage + settings.savings_percentage;
-                const totalPercentage = newPercentage + otherPercentages;
-                
-                console.log('Wants budget change:', {
-                  budget,
-                  newPercentage,
-                  needs_percentage: settings.needs_percentage,
-                  savings_percentage: settings.savings_percentage,
-                  otherPercentages,
-                  totalPercentage,
-                  wouldExceed: totalPercentage > 100
-                });
-                
-                // Only allow if total doesn't exceed 100% (with small tolerance for floating point)
-                if (totalPercentage <= 100.01) {
-                  await updateSettings({ wants_percentage: newPercentage });
-                } else {
-                  alert(`Cannot set budget. Total would exceed 100%\nNeeds: ${settings.needs_percentage}%\nWants: ${newPercentage}%\nSavings: ${settings.savings_percentage}%\nTotal: ${totalPercentage.toFixed(2)}%`);
-                }
-              }}
               onAddExpense={(name, amount) => handleAddExpense('wants', name, amount)}
               onEditExpense={handleEditExpense}
               onDeleteExpense={deleteExpense}
@@ -226,29 +179,6 @@ export default function Home() {
               color="green"
               budget={savingsBudget}
               expenses={savingsExpenses}
-              onBudgetChange={async (budget) => {
-                // Calculate exact percentage with 2 decimal places
-                const newPercentage = Math.round((budget / monthlyIncome) * 10000) / 100;
-                const otherPercentages = settings.needs_percentage + settings.wants_percentage;
-                const totalPercentage = newPercentage + otherPercentages;
-                
-                console.log('Savings budget change:', {
-                  budget,
-                  newPercentage,
-                  needs_percentage: settings.needs_percentage,
-                  wants_percentage: settings.wants_percentage,
-                  otherPercentages,
-                  totalPercentage,
-                  wouldExceed: totalPercentage > 100
-                });
-                
-                // Only allow if total doesn't exceed 100% (with small tolerance for floating point)
-                if (totalPercentage <= 100.01) {
-                  await updateSettings({ savings_percentage: newPercentage });
-                } else {
-                  alert(`Cannot set budget. Total would exceed 100%\nNeeds: ${settings.needs_percentage}%\nWants: ${settings.wants_percentage}%\nSavings: ${newPercentage}%\nTotal: ${totalPercentage.toFixed(2)}%`);
-                }
-              }}
               onAddExpense={(name, amount) => handleAddExpense('savings', name, amount)}
               onEditExpense={handleEditExpense}
               onDeleteExpense={deleteExpense}

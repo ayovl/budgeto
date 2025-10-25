@@ -16,7 +16,6 @@ interface ExpenseSectionProps {
   color: 'blue' | 'orange' | 'green';
   budget: number;
   expenses: Expense[];
-  onBudgetChange: (budget: number) => void;
   onAddExpense: (name: string, amount: number) => void;
   onEditExpense: (id: string, name: string, amount: number) => void;
   onDeleteExpense: (id: string) => void;
@@ -29,7 +28,6 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
   color,
   budget,
   expenses,
-  onBudgetChange,
   onAddExpense,
   onEditExpense,
   onDeleteExpense,
@@ -39,19 +37,8 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [expenseName, setExpenseName] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
-  const [budgetInput, setBudgetInput] = useState(budget.toString());
-  const [lastBudget, setLastBudget] = useState(budget);
-
-  React.useEffect(() => {
-    // Only update input if the budget prop changed from external source
-    if (budget !== lastBudget) {
-      setBudgetInput(budget.toString());
-      setLastBudget(budget);
-    }
-  }, [budget, lastBudget]);
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const remaining = budget - totalSpent;
 
   const handleAddExpense = () => {
     if (expenseName.trim() && parseFloat(expenseAmount) > 0) {
@@ -91,51 +78,19 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
     setIsAddingExpense(false);
   };
 
-  const handleBudgetUpdate = () => {
-    const newBudget = parseFloat(budgetInput) || 0;
-    setLastBudget(newBudget);
-    onBudgetChange(newBudget);
-  };
-
   return (
     <SectionContainer title={title} color={color} className="h-full">
       <div className="space-y-4">
-        {/* Budget Setting */}
+        {/* Expense Summary - Simple Display */}
         <div>
-          <div className="flex gap-2 mb-3">
-            <InputField
-              label="Budget"
-              value={budgetInput}
-              onChange={setBudgetInput}
-              type="number"
-              prefix="₨"
-              min={0}
-              step={50}
-              className="flex-1"
-              onEnter={handleBudgetUpdate}
-            />
-            <div className="flex items-end">
-              <Button onClick={handleBudgetUpdate} size="sm">
-                Set
-              </Button>
-            </div>
-          </div>
-
-          {/* Budget Summary */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
-              <p className="text-xs text-gray-400">Budget</p>
-              <p className="text-sm font-bold text-gray-100">{formatCurrency(budget)}</p>
-            </div>
+          <div className="grid grid-cols-2 gap-2 mb-3">
             <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
               <p className="text-xs text-gray-400">Spent</p>
               <p className="text-sm font-bold text-red-400">{formatCurrency(totalSpent)}</p>
             </div>
             <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
-              <p className="text-xs text-gray-400">Remaining</p>
-              <p className={`text-sm font-bold ${remaining >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {formatCurrency(remaining)}
-              </p>
+              <p className="text-xs text-gray-400">Allocated Budget</p>
+              <p className="text-sm font-bold text-gray-100">{formatCurrency(budget)}</p>
             </div>
           </div>
 
