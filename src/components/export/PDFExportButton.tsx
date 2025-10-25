@@ -18,18 +18,21 @@ export const PDFExportButton: React.FC<PDFExportButtonProps> = ({
       onClick={onExport}
       disabled={disabled || loading}
       variant="secondary"
-      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700"
+      size="sm"
+      className="flex items-center gap-1 sm:gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 text-xs sm:text-sm px-2 sm:px-4 py-2"
     >
       {loading ? (
         <>
-          <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-          Generating...
+          <div className="animate-spin w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full" />
+          <span className="hidden sm:inline">Generating...</span>
+          <span className="sm:hidden">...</span>
         </>
       ) : (
         <>
-          <FileText className="w-4 h-4" />
-          <Download className="w-4 h-4" />
-          Export PDF Report
+          <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+          <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline">Export PDF Report</span>
+          <span className="sm:hidden">PDF</span>
         </>
       )}
     </Button>
