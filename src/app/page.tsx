@@ -61,7 +61,12 @@ export default function Home() {
   };
 
   const handleAddExpense = async (category: 'needs' | 'wants' | 'savings', name: string, amount: number) => {
-    // Add the expense first
+    // Calculate current total for this category BEFORE adding
+    const categoryExpenses = expenses.filter((e) => e.category === category);
+    const currentSpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const newTotal = currentSpent + amount;
+
+    // Add the expense
     await addExpense({
       category,
       name,
@@ -69,14 +74,18 @@ export default function Home() {
       date: new Date().toISOString().split('T')[0],
     });
 
-    // Calculate new total for this category
-    const categoryExpenses = expenses.filter((e) => e.category === category);
-    const currentSpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const newTotal = currentSpent + amount;
-
-    // Calculate what percentage this new total represents
+    // Calculate and update the percentage
     if (monthlyIncome > 0) {
       const newPercentage = Math.round((newTotal / monthlyIncome) * 10000) / 100;
+      
+      console.log('Adding expense:', {
+        category,
+        amount,
+        currentSpent,
+        newTotal,
+        monthlyIncome,
+        newPercentage
+      });
       
       // Update the percentage for this category
       const updateKey = category === 'needs' ? 'needs_percentage' : 
