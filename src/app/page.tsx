@@ -1,15 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MonthlyIncome } from '@/components/budget/MonthlyIncome';
 import { BudgetSummary } from '@/components/expenses/BudgetSummary';
 import { ExpenseSection } from '@/components/expenses/ExpenseSection';
 import { SavingsGoals } from '@/components/goals/SavingsGoals';
 import { InvestmentPlans } from '@/components/investments/InvestmentPlans';
+import { PDFExportButton } from '@/components/export/PDFExportButton';
 import { useUserSettings, useExpenses, useSavingsGoals, useInvestmentPlans } from '@/lib/supabase/hooks';
+import { generatePDFReport } from '@/lib/utils/pdfReportGenerator';
 import { Loader2, Wallet } from 'lucide-react';
 
 export default function Home() {
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  
   const { settings, loading: settingsLoading, updateSettings } = useUserSettings();
   const { expenses, loading: expensesLoading, addExpense, updateExpense, deleteExpense } = useExpenses();
   const { goals, loading: goalsLoading, addGoal, updateGoal, deleteGoal } = useSavingsGoals();
@@ -150,16 +154,59 @@ export default function Home() {
     }
   };
 
+  const handleGeneratePDF = async () => {
+    setIsGeneratingPDF(true);
+    
+    try {
+      const reportData = {
+        monthlyIncome,
+        totalSpent,
+        totalRemaining,
+        needsPercentage: settings.needs_percentage,
+        wantsPercentage: settings.wants_percentage,
+        savingsPercentage: settings.savings_percentage,
+        needsTotal,
+        wantsTotal,
+        savingsTotal,
+        needsExpenses,
+        wantsExpenses,
+        savingsExpenses,
+        goals,
+        investments: plans,
+      };
+      
+      generatePDFReport(reportData);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF report. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-950 via-gray-900 to-gray-950">
       {/* Header */}
       <header className="bg-gray-900/50 backdrop-blur-sm shadow-lg border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <Wallet className="w-8 h-8 text-blue-500" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Budgeto</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Wallet className="w-8 h-8 text-blue-500" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">Budgeto</h1>
+                <p className="text-sm text-gray-400">Your Personal Budget Planner</p>
+              </div>
+            </div>
+            
+            {/* PDF Export Button - Only show if there's data */}
+            {monthlyIncome > 0 && (expenses.length > 0 || goals.length > 0 || plans.length > 0) && (
+              <PDFExportButton
+                onExport={handleGeneratePDF}
+                loading={isGeneratingPDF}
+                disabled={isLoading}
+              />
+            )}
           </div>
-          <p className="text-sm text-gray-400 mt-1">Your Personal Budget Planner</p>
         </div>
       </header>
 
