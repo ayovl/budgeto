@@ -71,37 +71,86 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
   return (
     <div className="w-full">
       <div className="flex justify-center px-2 sm:px-4">
-        {/* Enhanced Pie Chart - Properly Sized */}
-        <div className="w-full max-w-4xl h-[400px] sm:h-[500px] lg:h-[600px] relative flex items-center justify-center">
+        {/* Beautiful Pie Chart with Labels ON Slices */}
+        <div className="w-full max-w-5xl h-[450px] sm:h-[550px] md:h-[650px] lg:h-[700px] relative flex items-center justify-center">
           
           {/* Pie Chart using CSS conic-gradient with enhanced styling */}
           <div 
-            className="w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px] lg:w-[480px] lg:h-[480px] rounded-full relative"
+            className="w-80 h-80 sm:w-[420px] sm:h-[420px] md:w-[520px] md:h-[520px] lg:w-[600px] lg:h-[600px] rounded-full relative"
             style={{
               background: `conic-gradient(${gradientString})`,
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-              filter: 'drop-shadow(0 10px 25px rgba(0, 0, 0, 0.5))',
+              boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.9), 0 0 0 2px rgba(255, 255, 255, 0.1)',
+              filter: 'drop-shadow(0 15px 35px rgba(0, 0, 0, 0.6))',
             }}
           >
+            {/* Labels positioned ON the pie slices */}
+            {data.map((item, index) => {
+              // Calculate angle for label position
+              let cumulativePercent = 0;
+              for (let i = 0; i < index; i++) {
+                cumulativePercent += data[i].percentage;
+              }
+              const midPercent = cumulativePercent + (item.percentage / 2);
+              const angle = (midPercent / 100) * 360 - 90; // Start from top
+              const radians = (angle * Math.PI) / 180;
+              
+              // Position labels at 70% of radius from center
+              const radiusPercent = 70;
+              const x = Math.cos(radians) * radiusPercent;
+              const y = Math.sin(radians) * radiusPercent;
+              
+              // Only show labels for segments > 5%
+              if (item.percentage < 5) return null;
+              
+              return (
+                <div
+                  key={index}
+                  className="absolute"
+                  style={{
+                    left: `calc(50% + ${x}%)`,
+                    top: `calc(50% + ${y}%)`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                >
+                  <div className="bg-black/85 backdrop-blur-md rounded-xl p-2 sm:p-3 md:p-4 border border-white/30 shadow-2xl min-w-[90px] sm:min-w-[110px] md:min-w-[130px]">
+                    <div className="text-center">
+                      {/* Percentage - Bold and Large */}
+                      <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white mb-1">
+                        {item.percentage}%
+                      </div>
+                      {/* Category Name */}
+                      <div className="text-xs sm:text-sm md:text-base font-bold text-white/90 mb-1">
+                        {item.name}
+                      </div>
+                      {/* Amount */}
+                      <div className="text-xs sm:text-sm md:text-base font-semibold text-white/80">
+                        {formatCurrency(item.value)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
             {/* Inner circle to create donut effect with enhanced styling */}
             <div 
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-full flex items-center justify-center"
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 sm:w-44 sm:h-44 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full flex items-center justify-center"
               style={{
-                background: 'linear-gradient(145deg, #0f0f23, #1a1a2e)',
-                border: '3px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.4)',
+                background: 'linear-gradient(145deg, #0a0a1a, #1a1a30)',
+                border: '4px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: 'inset 0 4px 20px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.6)',
               }}
             >
               {/* Center total display */}
-              <div className="text-center px-2">
-                <div className="text-xs sm:text-sm text-gray-300 mb-1">Total Income</div>
-                <div className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold text-white mb-1">
+              <div className="text-center px-3">
+                <div className="text-xs sm:text-sm md:text-base text-gray-300 mb-1 sm:mb-2">Total Income</div>
+                <div className="text-base sm:text-xl md:text-2xl lg:text-3xl font-black text-white mb-1 sm:mb-2">
                   {formatCurrency(monthlyIncome)}
                 </div>
                 {remaining > 0 && (
                   <>
-                    <div className="text-xs text-green-300 mt-1">Available</div>
-                    <div className="text-xs sm:text-sm md:text-base font-semibold text-green-200">
+                    <div className="text-xs sm:text-sm text-green-300 mt-1 sm:mt-2">Available</div>
+                    <div className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-green-200">
                       {formatCurrency(remaining)}
                     </div>
                   </>
@@ -110,38 +159,6 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
             </div>
           </div>
 
-        </div>
-        
-        {/* Legend below the pie chart */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto px-4">
-          {data.map((item, index) => {
-            // Use the actual percentage from budget sections
-            const percentage = item.percentage;
-            return (
-              <div
-                key={index}
-                className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-200"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-4 h-4 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">
-                      {item.name}
-                    </div>
-                    <div className="text-xs text-gray-300 mt-1">
-                      {formatCurrency(item.value)}
-                    </div>
-                    <div className="text-xs font-bold text-gray-100 mt-1">
-                      {percentage}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
     </div>
