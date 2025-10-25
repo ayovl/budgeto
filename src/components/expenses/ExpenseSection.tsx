@@ -81,21 +81,10 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
   return (
     <SectionContainer title={title} color={color} className="h-full">
       <div className="space-y-4">
-        {/* Expense Summary - Simple Display */}
-        <div>
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
-              <p className="text-xs text-gray-400">Spent</p>
-              <p className="text-sm font-bold text-red-400">{formatCurrency(totalSpent)}</p>
-            </div>
-            <div className="text-center p-2 bg-gray-900/60 rounded-lg border border-gray-700">
-              <p className="text-xs text-gray-400">Allocated Budget</p>
-              <p className="text-sm font-bold text-gray-100">{formatCurrency(budget)}</p>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <ProgressBar current={totalSpent} total={budget} color={color} showPercentage={false} />
+        {/* Total Expenses Display */}
+        <div className="bg-gray-900/60 rounded-lg border border-gray-700 p-3">
+          <p className="text-xs text-gray-400 text-center mb-1">Total Expenses</p>
+          <p className="text-xl font-bold text-center text-gray-100">{formatCurrency(totalSpent)}</p>
         </div>
 
         {/* Add/Edit Expense Form */}

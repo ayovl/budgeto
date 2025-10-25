@@ -61,25 +61,6 @@ export default function Home() {
   };
 
   const handleAddExpense = async (category: 'needs' | 'wants' | 'savings', name: string, amount: number) => {
-    // Get current budget for this category
-    const currentBudget = category === 'needs' ? needsBudget : category === 'wants' ? wantsBudget : savingsBudget;
-    
-    // Check if category has budget allocated
-    if (currentBudget === 0) {
-      alert(`Please allocate budget to ${category} before adding expenses.`);
-      return;
-    }
-    
-    // Check if expense would exceed category budget
-    const categoryExpenses = expenses.filter((e) => e.category === category);
-    const currentSpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const newTotal = currentSpent + amount;
-    
-    if (newTotal > currentBudget) {
-      alert(`Cannot add expense. This would exceed your ${category} budget.\nBudget: ₨${currentBudget.toLocaleString()}\nCurrent Spent: ₨${currentSpent.toLocaleString()}\nTrying to add: ₨${amount.toLocaleString()}\nWould total: ₨${newTotal.toLocaleString()}`);
-      return;
-    }
-    
     await addExpense({
       category,
       name,
@@ -89,27 +70,6 @@ export default function Home() {
   };
 
   const handleEditExpense = async (id: string, name: string, amount: number) => {
-    // Find the expense to get its category
-    const expense = expenses.find(e => e.id === id);
-    if (!expense) return;
-
-    // Get current budget for this category
-    const currentBudget = expense.category === 'needs' ? needsBudget : 
-                         expense.category === 'wants' ? wantsBudget : 
-                         savingsBudget;
-    
-    // Calculate what the new total would be
-    const categoryExpenses = expenses.filter((e) => e.category === expense.category);
-    const currentSpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const oldAmount = expense.amount;
-    const newTotal = currentSpent - oldAmount + amount;
-    
-    // Check if edit would exceed budget
-    if (newTotal > currentBudget) {
-      alert(`Cannot edit expense. This would exceed your ${expense.category} budget.\nBudget: ₨${currentBudget.toLocaleString()}\nCurrent Spent: ₨${currentSpent.toLocaleString()}\nTrying to change to: ₨${amount.toLocaleString()}\nWould total: ₨${newTotal.toLocaleString()}`);
-      return;
-    }
-
     await updateExpense(id, { name, amount });
   };
 
