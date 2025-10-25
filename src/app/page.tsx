@@ -76,7 +76,7 @@ export default function Home() {
 
     // Calculate and update the percentage
     if (monthlyIncome > 0) {
-      const newPercentage = Math.round((newTotal / monthlyIncome) * 10000) / 100;
+      const newPercentage = Math.round((newTotal / monthlyIncome) * 100); // Round to whole number
       
       console.log('Adding expense:', {
         category,
@@ -113,7 +113,7 @@ export default function Home() {
 
     // Update percentage
     if (monthlyIncome > 0) {
-      const newPercentage = Math.round((currentSpent / monthlyIncome) * 10000) / 100;
+      const newPercentage = Math.round((currentSpent / monthlyIncome) * 100); // Round to whole number
       const updateKey = expense.category === 'needs' ? 'needs_percentage' : 
                        expense.category === 'wants' ? 'wants_percentage' : 
                        'savings_percentage';
@@ -136,7 +136,7 @@ export default function Home() {
 
     // Update percentage
     if (monthlyIncome > 0) {
-      const newPercentage = Math.round((newTotal / monthlyIncome) * 10000) / 100;
+      const newPercentage = Math.round((newTotal / monthlyIncome) * 100); // Round to whole number
       const updateKey = expense.category === 'needs' ? 'needs_percentage' : 
                        expense.category === 'wants' ? 'wants_percentage' : 
                        'savings_percentage';
