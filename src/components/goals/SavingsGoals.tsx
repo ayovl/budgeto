@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Target, Calendar, TrendingUp } from 'lucide-react';
+import { Plus, Target, Calendar, TrendingUp, PiggyBank, Edit3 } from 'lucide-react';
 import { SectionContainer } from '../ui/SectionContainer';
 import { InputField } from '../ui/InputField';
 import { Button } from '../ui/Button';
 import { SavingsGoal } from '@/lib/supabase/types';
 import { formatCurrency } from '@/lib/utils/currency';
+import { formatDateReadable, calculateRemainingMonths, calculateNewTargetDate } from '@/lib/utils/dateHelpers';
 
 interface SavingsGoalsProps {
   goals: SavingsGoal[];
@@ -175,6 +176,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
       name: goalName.trim(),
       type: goalType,
       target_amount: target,
+      current_saved: 0, // Start with 0 saved amount
       start_date: startDate,
       target_date: resolvedTargetDate,
       monthly_savings: monthly,
@@ -352,55 +354,214 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
             </div>
           ) : (
             goals.map((goal) => (
-              <div key={goal.id} className="bg-green-900/30 border border-green-700/40 rounded-xl p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-green-100">{goal.name}</h3>
-                    <span className="inline-block px-2 py-1 bg-green-800/60 text-green-200 text-xs rounded-full mt-1 capitalize">
-                      {goal.type.replace('-', ' ')}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(goal.id)}
-                      className="p-2 hover:bg-green-800/70 rounded-lg transition-colors"
-                      aria-label="Edit goal"
-                    >
-                      <TrendingUp className="w-4 h-4 text-green-200" />
-                    </button>
-                    <button
-                      onClick={() => onDeleteGoal(goal.id)}
-                      className="p-2 hover:bg-red-900/50 rounded-lg transition-colors text-red-400"
-                      aria-label="Delete goal"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-green-200/80">Target Amount</p>
-                    <p className="font-bold text-green-100">{formatCurrency(goal.target_amount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-green-200/80">Monthly Savings</p>
-                    <p className="font-bold text-green-100">{formatCurrency(goal.monthly_savings)}</p>
-                  </div>
-                  <div>
-                    <p className="text-green-200/80">Duration</p>
-                    <p className="font-medium text-white">{calculateDuration(goal.start_date, goal.target_date)}</p>
-                  </div>
-                  <div>
-                    <p className="text-green-200/80">Target Date</p>
-                    <p className="font-medium text-white">{new Date(goal.target_date).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              </div>
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onEdit={handleEdit}
+                onDelete={onDeleteGoal}
+                onUpdateSavings={(id, updates) => {
+                  // Create a complete goal object by merging updates with existing goal
+                  const existingGoal = goals.find(g => g.id === id);
+                  if (existingGoal) {
+                    const updatedGoal = { ...existingGoal, ...updates };
+                    onEditGoal(id, {
+                      name: updatedGoal.name,
+                      type: updatedGoal.type,
+                      target_amount: updatedGoal.target_amount,
+                      current_saved: updatedGoal.current_saved,
+                      start_date: updatedGoal.start_date,
+                      target_date: updatedGoal.target_date,
+                      monthly_savings: updatedGoal.monthly_savings,
+                    });
+                  }
+                }}
+              />
             ))
           )}
         </div>
       </div>
     </SectionContainer>
+  );
+};
+
+// Individual Goal Card Component
+interface GoalCardProps {
+  goal: SavingsGoal;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onUpdateSavings: (id: string, updates: Partial<SavingsGoal>) => void;
+}
+
+const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateSavings }) => {
+  const [isAddingMoney, setIsAddingMoney] = React.useState(false);
+  const [addAmount, setAddAmount] = React.useState('');
+  
+  // Calculate progress
+  const progress = goal.target_amount > 0 ? (goal.current_saved / goal.target_amount) * 100 : 0;
+  const remaining = Math.max(0, goal.target_amount - goal.current_saved);
+  
+  // Calculate remaining months based on current progress
+  const remainingMonths = calculateRemainingMonths(goal.target_amount, goal.current_saved, goal.monthly_savings);
+  const newTargetDate = calculateNewTargetDate(goal.current_saved, goal.target_amount, goal.monthly_savings);
+  
+  const handleAddMoney = () => {
+    const amount = parseFloat(addAmount);
+    if (amount > 0) {
+      const newCurrentSaved = goal.current_saved + amount;
+      onUpdateSavings(goal.id, { 
+        current_saved: newCurrentSaved,
+        // Update target date based on new progress
+        target_date: newCurrentSaved >= goal.target_amount ? 
+          new Date().toISOString().split('T')[0] : 
+          calculateNewTargetDate(newCurrentSaved, goal.target_amount, goal.monthly_savings)
+      });
+      setAddAmount('');
+      setIsAddingMoney(false);
+    }
+  };
+
+  const formatDuration = (months: number): string => {
+    if (months <= 0) return 'Goal achieved! 🎉';
+    if (months < 12) return `${months} month${months !== 1 ? 's' : ''} left`;
+    
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    if (remainingMonths === 0) return `${years} year${years !== 1 ? 's' : ''} left`;
+    return `${years} year${years !== 1 ? 's' : ''}, ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''} left`;
+  };
+
+  return (
+    <div className="bg-green-900/30 border border-green-700/40 rounded-2xl p-6 space-y-5">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h3 className="font-bold text-2xl text-green-100 mb-2">{goal.name}</h3>
+          <span className="inline-block px-3 py-1 bg-green-800/60 text-green-200 text-sm rounded-full capitalize">
+            {goal.type.replace('-', ' ')}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onEdit(goal.id)}
+            className="p-3 hover:bg-green-800/70 rounded-xl transition-colors"
+            aria-label="Edit goal"
+          >
+            <Edit3 className="w-5 h-5 text-green-200" />
+          </button>
+          <button
+            onClick={() => onDelete(goal.id)}
+            className="p-3 hover:bg-red-900/50 rounded-xl transition-colors text-red-400"
+            aria-label="Delete goal"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* Progress Section */}
+      <div className="bg-green-800/30 rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-green-200/80 text-sm font-medium">Progress</span>
+          <span className="text-green-100 font-bold text-lg">{Math.round(progress)}%</span>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-green-900/50 rounded-full h-3">
+          <div 
+            className="bg-linear-to-r from-green-500 to-green-400 h-3 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          />
+        </div>
+        
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-green-200">{formatCurrency(goal.current_saved)}</span>
+          <span className="text-green-100 font-medium">{formatCurrency(goal.target_amount)}</span>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-green-800/20 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <PiggyBank className="w-4 h-4 text-green-400" />
+            <span className="text-green-200/80 text-sm">Monthly Savings</span>
+          </div>
+          <p className="font-bold text-green-100 text-lg">{formatCurrency(goal.monthly_savings)}</p>
+        </div>
+        
+        <div className="bg-green-800/20 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="w-4 h-4 text-green-400" />
+            <span className="text-green-200/80 text-sm">Remaining</span>
+          </div>
+          <p className="font-bold text-green-100 text-lg">{formatCurrency(remaining)}</p>
+        </div>
+        
+        <div className="bg-green-800/20 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="w-4 h-4 text-green-400" />
+            <span className="text-green-200/80 text-sm">Timeline</span>
+          </div>
+          <p className="font-medium text-green-100">{formatDuration(remainingMonths)}</p>
+        </div>
+        
+        <div className="bg-green-800/20 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-green-400" />
+            <span className="text-green-200/80 text-sm">Target Date</span>
+          </div>
+          <p className="font-medium text-green-100 text-sm">{formatDateReadable(newTargetDate)}</p>
+        </div>
+      </div>
+
+      {/* Add Money Section */}
+      <div className="border-t border-green-700/30 pt-4">
+        {!isAddingMoney ? (
+          <button
+            onClick={() => setIsAddingMoney(true)}
+            className="w-full bg-green-700/50 hover:bg-green-700/70 border border-green-600 rounded-xl px-4 py-3 text-green-100 font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Money to Goal
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <InputField
+              label="Add Amount"
+              value={addAmount}
+              onChange={setAddAmount}
+              type="number"
+              prefix="₨"
+              min={0}
+              step={0.01}
+              placeholder="Enter amount to add"
+              onEnter={handleAddMoney}
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={handleAddMoney}
+                variant="success"
+                size="sm"
+                className="flex-1"
+                disabled={!addAmount || parseFloat(addAmount) <= 0}
+              >
+                Add {addAmount && formatCurrency(parseFloat(addAmount))}
+              </Button>
+              <Button 
+                onClick={() => {
+                  setIsAddingMoney(false);
+                  setAddAmount('');
+                }} 
+                variant="secondary" 
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
