@@ -145,6 +145,19 @@ export default function Home() {
     const expense = expenses.find(e => e.id === id);
     if (!expense) return;
 
+    // Check if this is a goal expense and remove the related goal
+    if (expense.name.endsWith(' (Goal)')) {
+      const goalName = expense.name.replace(' (Goal)', '');
+      const relatedGoal = goals.find(g => 
+        g.name === goalName && g.category === expense.category
+      );
+      
+      if (relatedGoal) {
+        // Delete the related goal (this will prevent infinite recursion since we're already in handleDeleteExpense)
+        await deleteGoal(relatedGoal.id);
+      }
+    }
+
     // Delete the expense
     await deleteExpense(id);
 

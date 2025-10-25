@@ -27,20 +27,24 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
   const remaining = Math.max(0, monthlyIncome - totalSpent);
   const remainingPercentage = monthlyIncome > 0 ? Math.round((remaining / monthlyIncome) * 100) : 0;
   
-  const data = [
+  // Create data array with proper filtering for zero values
+  const allData = [
     { name: 'Needs', value: needs, color: '#4f46e5', percentage: needsPercentage },
     { name: 'Wants', value: wants, color: '#f59e0b', percentage: wantsPercentage },
     { name: 'Savings', value: savings, color: '#10b981', percentage: savingsPercentage },
     { name: 'Remaining', value: remaining, color: '#8b5cf6', percentage: remainingPercentage },
-  ].filter(item => item.value > 0); // Only show categories with values > 0
-
-  // Enhanced colors with gradients
-  const gradientColors = [
-    'url(#needsGradient)',
-    'url(#wantsGradient)', 
-    'url(#savingsGradient)',
-    'url(#remainingGradient)'
   ];
+  
+  // Filter out items with zero or very small values (less than 1 to account for rounding)
+  const data = allData.filter(item => item.value >= 1);
+
+  // Enhanced colors with gradients - map to each data item properly
+  const colorGradientMap: { [key: string]: string } = {
+    'Needs': 'url(#needsGradient)',
+    'Wants': 'url(#wantsGradient)', 
+    'Savings': 'url(#savingsGradient)',
+    'Remaining': 'url(#remainingGradient)'
+  };
 
   // Custom label component with better spacing and readability
   const renderCombinedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
@@ -107,6 +111,22 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
     );
   };
 
+  // If no data to display, show a message
+  if (data.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="flex justify-center px-4">
+          <div className="w-full max-w-4xl h-[400px] flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <p className="text-lg">No budget data to display</p>
+              <p className="text-sm mt-2">Add some expenses to see your budget allocation</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <div className="flex justify-center px-4">
@@ -150,7 +170,7 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
                 {data.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={gradientColors[index % gradientColors.length]}
+                    fill={colorGradientMap[entry.name] || 'url(#needsGradient)'}
                     style={{
                       filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))',
                     }}
