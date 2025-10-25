@@ -61,16 +61,79 @@ export default function Home() {
   };
 
   const handleAddExpense = async (category: 'needs' | 'wants' | 'savings', name: string, amount: number) => {
+    // Add the expense first
     await addExpense({
       category,
       name,
       amount,
       date: new Date().toISOString().split('T')[0],
     });
+
+    // Calculate new total for this category
+    const categoryExpenses = expenses.filter((e) => e.category === category);
+    const currentSpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const newTotal = currentSpent + amount;
+
+    // Calculate what percentage this new total represents
+    if (monthlyIncome > 0) {
+      const newPercentage = Math.round((newTotal / monthlyIncome) * 10000) / 100;
+      
+      // Update the percentage for this category
+      const updateKey = category === 'needs' ? 'needs_percentage' : 
+                       category === 'wants' ? 'wants_percentage' : 
+                       'savings_percentage';
+      
+      await updateSettings({ [updateKey]: newPercentage });
+    }
   };
 
   const handleEditExpense = async (id: string, name: string, amount: number) => {
+    // Find the expense to get its category
+    const expense = expenses.find(e => e.id === id);
+    if (!expense) return;
+
+    // Update the expense
     await updateExpense(id, { name, amount });
+
+    // Recalculate total for this category
+    const categoryExpenses = expenses.filter((e) => e.category === expense.category);
+    const currentSpent = categoryExpenses.reduce((sum, exp) => {
+      // Use new amount for the edited expense, old amount for others
+      return sum + (exp.id === id ? amount : exp.amount);
+    }, 0);
+
+    // Update percentage
+    if (monthlyIncome > 0) {
+      const newPercentage = Math.round((currentSpent / monthlyIncome) * 10000) / 100;
+      const updateKey = expense.category === 'needs' ? 'needs_percentage' : 
+                       expense.category === 'wants' ? 'wants_percentage' : 
+                       'savings_percentage';
+      
+      await updateSettings({ [updateKey]: newPercentage });
+    }
+  };
+
+  const handleDeleteExpense = async (id: string) => {
+    // Find the expense to get its category and amount
+    const expense = expenses.find(e => e.id === id);
+    if (!expense) return;
+
+    // Delete the expense
+    await deleteExpense(id);
+
+    // Recalculate total for this category (excluding the deleted expense)
+    const categoryExpenses = expenses.filter((e) => e.category === expense.category && e.id !== id);
+    const newTotal = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+    // Update percentage
+    if (monthlyIncome > 0) {
+      const newPercentage = Math.round((newTotal / monthlyIncome) * 10000) / 100;
+      const updateKey = expense.category === 'needs' ? 'needs_percentage' : 
+                       expense.category === 'wants' ? 'wants_percentage' : 
+                       'savings_percentage';
+      
+      await updateSettings({ [updateKey]: newPercentage });
+    }
   };
 
   return (
@@ -117,7 +180,7 @@ export default function Home() {
               expenses={needsExpenses}
               onAddExpense={(name, amount) => handleAddExpense('needs', name, amount)}
               onEditExpense={handleEditExpense}
-              onDeleteExpense={deleteExpense}
+              onDeleteExpense={handleDeleteExpense}
               defaultPlaceholder="Internet Bill"
             />
 
@@ -129,7 +192,7 @@ export default function Home() {
               expenses={wantsExpenses}
               onAddExpense={(name, amount) => handleAddExpense('wants', name, amount)}
               onEditExpense={handleEditExpense}
-              onDeleteExpense={deleteExpense}
+              onDeleteExpense={handleDeleteExpense}
               defaultPlaceholder="Entertainment"
             />
 
@@ -141,7 +204,7 @@ export default function Home() {
               expenses={savingsExpenses}
               onAddExpense={(name, amount) => handleAddExpense('savings', name, amount)}
               onEditExpense={handleEditExpense}
-              onDeleteExpense={deleteExpense}
+              onDeleteExpense={handleDeleteExpense}
               defaultPlaceholder="Emergency Fund"
             />
           </div>
