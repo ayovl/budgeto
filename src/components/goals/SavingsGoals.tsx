@@ -395,6 +395,8 @@ interface GoalCardProps {
 const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateSavings }) => {
   const [isAddingMoney, setIsAddingMoney] = React.useState(false);
   const [addAmount, setAddAmount] = React.useState('');
+  const [isEditingSavings, setIsEditingSavings] = React.useState(false);
+  const [editSavingsAmount, setEditSavingsAmount] = React.useState('');
   
   // Calculate progress
   const progress = goal.target_amount > 0 ? (goal.current_saved / goal.target_amount) * 100 : 0;
@@ -402,7 +404,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateSav
   
   // Calculate remaining months based on current progress
   const remainingMonths = calculateRemainingMonths(goal.target_amount, goal.current_saved, goal.monthly_savings);
-  const newTargetDate = calculateNewTargetDate(goal.current_saved, goal.target_amount, goal.monthly_savings);
+  const newTargetDate = calculateNewTargetDate(goal.current_saved, goal.target_amount, goal.monthly_savings, goal.start_date, goal.target_date);
   
   const handleAddMoney = () => {
     const amount = parseFloat(addAmount);
@@ -413,10 +415,39 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateSav
         // Update target date based on new progress
         target_date: newCurrentSaved >= goal.target_amount ? 
           new Date().toISOString().split('T')[0] : 
-          calculateNewTargetDate(newCurrentSaved, goal.target_amount, goal.monthly_savings)
+          calculateNewTargetDate(newCurrentSaved, goal.target_amount, goal.monthly_savings, goal.start_date, goal.target_date)
       });
       setAddAmount('');
       setIsAddingMoney(false);
+    }
+  };
+
+  const handleEditSavings = () => {
+    setEditSavingsAmount(goal.current_saved.toString());
+    setIsEditingSavings(true);
+  };
+
+  const handleSaveEditedSavings = () => {
+    const amount = parseFloat(editSavingsAmount);
+    if (amount >= 0) {
+      onUpdateSavings(goal.id, { 
+        current_saved: amount,
+        // Update target date based on new progress
+        target_date: amount >= goal.target_amount ? 
+          new Date().toISOString().split('T')[0] : 
+          calculateNewTargetDate(amount, goal.target_amount, goal.monthly_savings, goal.start_date, goal.target_date)
+      });
+      setEditSavingsAmount('');
+      setIsEditingSavings(false);
+    }
+  };
+
+  const handleRemoveAllSavings = () => {
+    if (confirm('Are you sure you want to remove all saved money for this goal?')) {
+      onUpdateSavings(goal.id, { 
+        current_saved: 0,
+        target_date: goal.target_date // Reset to original target date
+      });
     }
   };
 
@@ -478,6 +509,24 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateSav
           <span className="text-green-200">{formatCurrency(goal.current_saved)}</span>
           <span className="text-green-100 font-medium">{formatCurrency(goal.target_amount)}</span>
         </div>
+        
+        {/* Edit/Remove Saved Money - Only show if money has been saved */}
+        {goal.current_saved > 0 && (
+          <div className="flex gap-2 pt-2 border-t border-green-700/30">
+            <button
+              onClick={handleEditSavings}
+              className="flex-1 text-xs text-green-300 hover:text-green-200 transition-colors"
+            >
+              Edit Saved Amount
+            </button>
+            <button
+              onClick={handleRemoveAllSavings}
+              className="flex-1 text-xs text-red-400 hover:text-red-300 transition-colors"
+            >
+              Remove All
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stats Grid */}
@@ -515,9 +564,48 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateSav
         </div>
       </div>
 
-      {/* Add Money Section */}
-      <div className="border-t border-green-700/30 pt-4">
-        {!isAddingMoney ? (
+      {/* Add/Edit Money Section */}
+      <div className="border-t border-green-700/30 pt-4 space-y-3">
+        {/* Edit Savings Form */}
+        {isEditingSavings && (
+          <div className="space-y-3 bg-yellow-900/20 p-3 rounded-lg border border-yellow-600/30">
+            <InputField
+              label="Edit Total Saved Amount"
+              value={editSavingsAmount}
+              onChange={setEditSavingsAmount}
+              type="number"
+              prefix="₨"
+              min={0}
+              step={0.01}
+              placeholder="Enter total saved amount"
+              onEnter={handleSaveEditedSavings}
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSaveEditedSavings}
+                variant="success"
+                size="sm"
+                className="flex-1"
+                disabled={!editSavingsAmount || parseFloat(editSavingsAmount) < 0}
+              >
+                Save Changes
+              </Button>
+              <Button 
+                onClick={() => {
+                  setIsEditingSavings(false);
+                  setEditSavingsAmount('');
+                }} 
+                variant="secondary" 
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Add Money Form */}
+        {!isEditingSavings && !isAddingMoney && (
           <button
             onClick={() => setIsAddingMoney(true)}
             className="w-full bg-green-700/50 hover:bg-green-700/70 border border-green-600 rounded-xl px-4 py-3 text-green-100 font-medium transition-colors flex items-center justify-center gap-2"
@@ -525,7 +613,9 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateSav
             <Plus className="w-4 h-4" />
             Add Money to Goal
           </button>
-        ) : (
+        )}
+        
+        {!isEditingSavings && isAddingMoney && (
           <div className="space-y-3">
             <InputField
               label="Add Amount"

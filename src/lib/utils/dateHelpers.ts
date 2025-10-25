@@ -54,14 +54,22 @@ export const calculateRemainingMonths = (
 export const calculateNewTargetDate = (
   currentSaved: number,
   targetAmount: number,
-  monthlySavings: number
+  monthlySavings: number,
+  startDate: string,
+  originalTargetDate?: string
 ): string => {
+  // If no money saved yet, use the original target date
+  if (currentSaved === 0 && originalTargetDate) {
+    return originalTargetDate;
+  }
+  
   const remainingMonths = calculateRemainingMonths(targetAmount, currentSaved, monthlySavings);
   
   if (remainingMonths <= 0) {
     return new Date().toISOString().split('T')[0]; // Already achieved
   }
   
+  // Calculate from current date forward
   const newDate = new Date();
   newDate.setMonth(newDate.getMonth() + remainingMonths);
   
