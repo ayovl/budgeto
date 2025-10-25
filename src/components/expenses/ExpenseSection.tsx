@@ -50,17 +50,17 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
   const remainingBudget = monthlyIncome - totalSpentAcrossAll;
   const remainingPercentage = monthlyIncome > 0 ? Math.round(((remainingBudget / monthlyIncome) * 100)) : 0;
   
-  // Calculate amount from percentage input
+  // Calculate amount from percentage input - percentage of REMAINING budget, not monthly income
   const calculateAmountFromPercentage = (percentage: number): number => {
-    return Math.round((percentage / 100) * monthlyIncome);
+    return Math.round((percentage / 100) * remainingBudget);
   };
 
   const handleAddExpense = () => {
     let amount = 0;
     
     if (inputMode === 'amount') {
-      if (!expenseName.trim() || !expenseAmount || parseFloat(expenseAmount) <= 0) return;
-      amount = parseFloat(expenseAmount);
+      if (!expenseName.trim() || expenseAmount === '' || parseFloat(expenseAmount) < 0) return;
+      amount = parseFloat(expenseAmount) || 0; // Allow 0 amounts
     } else {
       if (!expenseName.trim() || !expensePercentage || parseFloat(expensePercentage) <= 0) return;
       const percentage = parseFloat(expensePercentage);
@@ -95,8 +95,8 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
     
     let amount = 0;
     if (inputMode === 'amount') {
-      if (!expenseAmount || parseFloat(expenseAmount) <= 0) return;
-      amount = parseFloat(expenseAmount);
+      if (expenseAmount === '' || parseFloat(expenseAmount) < 0) return;
+      amount = parseFloat(expenseAmount) || 0; // Allow 0 amounts
     } else {
       if (!expensePercentage || parseFloat(expensePercentage) <= 0) return;
       const percentage = parseFloat(expensePercentage);
@@ -194,6 +194,9 @@ export const ExpenseSection: React.FC<ExpenseSectionProps> = ({
                   <p className="text-xs text-gray-400 mb-1">Available to Allocate</p>
                   <p className="text-sm font-semibold text-green-400">
                     {remainingPercentage}% = {formatCurrency(remainingBudget)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Percentage is calculated from remaining budget
                   </p>
                 </div>
                 
