@@ -8,20 +8,26 @@ interface BudgetAllocationChartProps {
   needs: number;
   wants: number;
   savings: number;
+  monthlyIncome: number;
 }
 
 export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
   needs,
   wants,
   savings,
+  monthlyIncome,
 }) => {
+  const totalSpent = needs + wants + savings;
+  const remaining = Math.max(0, monthlyIncome - totalSpent);
+  
   const data = [
     { name: 'Needs', value: needs, color: '#3b82f6' },
     { name: 'Wants', value: wants, color: '#f97316' },
     { name: 'Savings', value: savings, color: '#22c55e' },
-  ];
+    { name: 'Remaining', value: remaining, color: '#6b7280' },
+  ].filter(item => item.value > 0); // Only show categories with values > 0
 
-  const COLORS = ['#3b82f6', '#f97316', '#22c55e'];
+  const COLORS = ['#3b82f6', '#f97316', '#22c55e', '#6b7280'];
 
   const renderCustomLabel = ({
     cx,

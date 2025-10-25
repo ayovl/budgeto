@@ -102,6 +102,7 @@ export const MonthlyIncome: React.FC<MonthlyIncomeProps> = ({
               needs={needsAmount}
               wants={wantsAmount}
               savings={savingsAmount}
+              monthlyIncome={income}
             />
           </>
         )}
