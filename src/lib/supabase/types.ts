@@ -25,6 +25,7 @@ export interface SavingsGoal {
   user_id: string;
   name: string;
   type: 'short-term' | 'medium-term' | 'long-term';
+  category: 'needs' | 'wants' | 'savings';
   target_amount: number;
   current_saved: number;
   start_date: string;

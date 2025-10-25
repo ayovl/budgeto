@@ -27,7 +27,9 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
   
   const [goalName, setGoalName] = useState('');
   const [goalType, setGoalType] = useState<'short-term' | 'medium-term' | 'long-term'>('short-term');
+  const [goalCategory, setGoalCategory] = useState<'needs' | 'wants' | 'savings'>('savings');
   const [targetAmount, setTargetAmount] = useState('');
+  const [currentSaved, setCurrentSaved] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [targetDate, setTargetDate] = useState('');
   const [monthlySavings, setMonthlySavings] = useState('');
@@ -172,11 +174,13 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
       return;
     }
 
+    const savedAmount = currentSaved ? parseFloat(currentSaved) : 0;
     const goalData = {
       name: goalName.trim(),
       type: goalType,
+      category: goalCategory,
       target_amount: target,
-      current_saved: 0, // Start with 0 saved amount
+      current_saved: Math.max(0, savedAmount), // Use input amount or 0
       start_date: startDate,
       target_date: resolvedTargetDate,
       monthly_savings: monthly,
@@ -196,7 +200,9 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
     if (goal) {
       setGoalName(goal.name);
       setGoalType(goal.type);
+      setGoalCategory(goal.category || 'savings'); // Default to savings for existing goals
       setTargetAmount(goal.target_amount.toString());
+      setCurrentSaved(goal.current_saved.toString());
       setStartDate(goal.start_date);
       setTargetDate(goal.target_date);
       setMonthlySavings(goal.monthly_savings.toString());
@@ -210,7 +216,9 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
   const resetForm = () => {
     setGoalName('');
     setGoalType('short-term');
+    setGoalCategory('savings');
     setTargetAmount('');
+    setCurrentSaved('');
     setStartDate(new Date().toISOString().split('T')[0]);
     setTargetDate('');
     setMonthlySavings('');
@@ -234,32 +242,61 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
               onEnter={handleSave}
             />
 
-            <div>
-              <label className="text-sm font-medium text-gray-300 mb-1 block">Goal Type</label>
-              <select
-                value={goalType}
-                onChange={(e) => setGoalType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-gray-900 border-2 border-gray-700 rounded-lg focus:border-green-500 focus:outline-none text-white"
-              >
-                <option value="short-term">Short-term</option>
-                <option value="medium-term">Medium-term</option>
-                <option value="long-term">Long-term</option>
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-1 block">Goal Type</label>
+                <select
+                  value={goalType}
+                  onChange={(e) => setGoalType(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-gray-900 border-2 border-gray-700 rounded-lg focus:border-green-500 focus:outline-none text-white"
+                >
+                  <option value="short-term">Short-term</option>
+                  <option value="medium-term">Medium-term</option>
+                  <option value="long-term">Long-term</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-1 block">Budget Category</label>
+                <select
+                  value={goalCategory}
+                  onChange={(e) => setGoalCategory(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-gray-900 border-2 border-gray-700 rounded-lg focus:border-green-500 focus:outline-none text-white"
+                >
+                  <option value="needs">Needs (Essential expenses)</option>
+                  <option value="wants">Wants (Lifestyle expenses)</option>
+                  <option value="savings">Savings (Financial goals)</option>
+                </select>
+              </div>
             </div>
 
-            <InputField
-              label="Target Amount"
-              value={targetAmount}
-              onChange={(val) => {
-                setTargetAmount(val);
-                setLastChangedField('targetAmount');
-              }}
-              type="number"
-              prefix="₨"
-              min={0}
-              step={100}
-              onEnter={handleSave}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <InputField
+                label="Target Amount"
+                value={targetAmount}
+                onChange={(val) => {
+                  setTargetAmount(val);
+                  setLastChangedField('targetAmount');
+                }}
+                type="number"
+                prefix="₨"
+                min={0}
+                step={100}
+                onEnter={handleSave}
+              />
+
+              <InputField
+                label={editingId ? "Current Saved Amount" : "Initial Amount (if any)"}
+                value={currentSaved}
+                onChange={setCurrentSaved}
+                type="number"
+                prefix="₨"
+                min={0}
+                step={100}
+                placeholder={editingId ? "Amount already saved" : "Starting amount (optional)"}
+                onEnter={handleSave}
+              />
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <InputField
@@ -367,6 +404,7 @@ export const SavingsGoals: React.FC<SavingsGoalsProps> = ({
                     onEditGoal(id, {
                       name: updatedGoal.name,
                       type: updatedGoal.type,
+                      category: updatedGoal.category || 'savings',
                       target_amount: updatedGoal.target_amount,
                       current_saved: updatedGoal.current_saved,
                       start_date: updatedGoal.start_date,
