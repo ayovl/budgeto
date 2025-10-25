@@ -42,17 +42,29 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
     'url(#remainingGradient)'
   ];
 
-  // Custom label component for all information inside pie slices
+  // Custom label component with better spacing and readability
   const renderCombinedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-    if (percent < 0.05) return null; // Don't show label for very small slices
+    if (percent < 0.08) return null; // Don't show label for very small slices
 
     return (
       <g>
+        {/* Background for better readability */}
+        <rect
+          x={x - 45}
+          y={y - 22}
+          width={90}
+          height={44}
+          rx={8}
+          fill="rgba(0,0,0,0.7)"
+          stroke="rgba(255,255,255,0.2)"
+          strokeWidth={1}
+        />
+        
         {/* Percentage */}
         <text
           x={x}
@@ -60,32 +72,34 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
           fill="white"
           textAnchor="middle"
           dominantBaseline="central"
-          className="font-bold text-lg drop-shadow-lg"
-          style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))' }}
+          className="font-bold text-xl"
+          style={{ filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))' }}
         >
           {`${(percent * 100).toFixed(0)}%`}
         </text>
+        
         {/* Category name */}
         <text
           x={x}
-          y={y + 4}
+          y={y + 6}
           fill="white"
           textAnchor="middle"
           dominantBaseline="central"
-          className="font-semibold text-sm drop-shadow-lg"
-          style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))' }}
+          className="font-semibold text-sm"
+          style={{ filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))' }}
         >
           {name}
         </text>
+        
         {/* Amount */}
         <text
           x={x}
-          y={y + 16}
+          y={y + 18}
           fill="white"
           textAnchor="middle"
           dominantBaseline="central"
-          className="font-medium text-xs drop-shadow-lg opacity-90"
-          style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))' }}
+          className="font-medium text-xs opacity-95"
+          style={{ filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))' }}
         >
           {formatCurrency(value)}
         </text>
@@ -95,9 +109,9 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
 
   return (
     <div className="w-full">
-      <div className="flex justify-center">
-        {/* Enhanced Pie Chart */}
-        <div className="w-full max-w-2xl h-[500px] sm:h-[600px] relative">
+      <div className="flex justify-center px-4">
+        {/* Enhanced Pie Chart - Much Larger */}
+        <div className="w-full max-w-4xl h-[600px] sm:h-[700px] lg:h-[800px] relative">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <defs>
@@ -126,8 +140,8 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
                 cy="50%"
                 labelLine={false}
                 label={renderCombinedLabel}
-                outerRadius={140}
-                innerRadius={40}
+                outerRadius={180}
+                innerRadius={60}
                 fill="#8884d8"
                 dataKey="value"
                 stroke="rgba(255,255,255,0.3)"
@@ -138,7 +152,7 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
                     key={`cell-${index}`} 
                     fill={gradientColors[index % gradientColors.length]}
                     style={{
-                      filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
+                      filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))',
                     }}
                   />
                 ))}
@@ -146,17 +160,17 @@ export const BudgetAllocationChart: React.FC<BudgetAllocationChartProps> = ({
             </PieChart>
           </ResponsiveContainer>
           
-          {/* Center total display */}
+          {/* Center total display - Enhanced */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-            <div className="bg-gray-900/90 rounded-full p-6 border-2 border-white/20 backdrop-blur-sm">
-              <div className="text-xs text-gray-300 mb-1">Total Income</div>
-              <div className="text-xl sm:text-2xl font-bold text-white">
+            <div className="bg-gray-900/95 rounded-full p-8 border-2 border-white/30 backdrop-blur-sm shadow-2xl">
+              <div className="text-sm text-gray-300 mb-2">Total Income</div>
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
                 {formatCurrency(monthlyIncome)}
               </div>
               {remaining > 0 && (
                 <>
-                  <div className="text-xs text-green-300 mt-2">Available</div>
-                  <div className="text-sm font-semibold text-green-200">
+                  <div className="text-xs text-green-300 mt-3">Available</div>
+                  <div className="text-lg font-semibold text-green-200">
                     {formatCurrency(remaining)}
                   </div>
                 </>
